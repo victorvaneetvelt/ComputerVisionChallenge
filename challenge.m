@@ -9,7 +9,6 @@ members = {'Christian Geiger','Moritz Eckhoff'};
 % Email-Adress (from Moodle!):
  mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de'};
 
-%asdfasdf
 %% Load images
 Image_L1 = imread('img/L2.JPG');
 %Image_L2 = imread('img/L2.JPG');

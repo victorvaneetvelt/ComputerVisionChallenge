@@ -1,4 +1,4 @@
-function DispMap=stereoDisparity(E)
+function DispMap=stereoDisparity(E,image1, image2, halfBolcksize, disparityRange ,false)
 
 % The following code was adapted from a Mathworks example available here:
 % http://www.mathworks.com/help/vision/examples/stereo-vision.html
@@ -20,9 +20,11 @@ function DispMap=stereoDisparity(E)
 %     - Initial version.
 
 % Load the stereo images.
-left = imread('L2.JPG');
-right = imread('R2.JPG');
+% left = imread('L2.JPG');
+% right = imread('R2.JPG');
 
+left=image1;
+right=image2;
 %{
 % ===================================
 %       Display Composite Image
@@ -131,7 +133,7 @@ for (m = 1 : imgHeight)
 		for (i = mind : maxd)
 		
 % 			% Select the block from the left image at the distance 'i'.
-% 			block = leftI(minr:maxr, (minc + i):(maxc + i));
+ 			block = leftI(minr:maxr, (minc + i):(maxc + i));
             
             
 
