@@ -1,4 +1,4 @@
-function DispMap=stereoDisparity(E,image1, image2, halfBolcksize, disparityRange ,false)
+function DispMap=stereoDisparity(F,left, right,halfBlockSize, disparityRange, do_plot)
 
 % The following code was adapted from a Mathworks example available here:
 % http://www.mathworks.com/help/vision/examples/stereo-vision.html
@@ -19,12 +19,7 @@ function DispMap=stereoDisparity(E,image1, image2, halfBolcksize, disparityRange
 %   v1.0 - 2014/01/10
 %     - Initial version.
 
-% Load the stereo images.
-% left = imread('L2.JPG');
-% right = imread('R2.JPG');
 
-left=image1;
-right=image2;
 %{
 % ===================================
 %       Display Composite Image
@@ -61,35 +56,33 @@ title('Composite image');
 fprintf('Performing basic block matching...\n');
 
 % Start a timer.
-tic();
+%tic();
 
 % Convert the images from RGB to grayscale by averaging the three color 
 % channels.
 leftI = mean(left, 3);
 rightI = mean(right, 3);
 
-% DbasicSubpixel will hold the result of the block matching. 
+% DispMap will hold the result of the block matching. 
 % The values will be 'single' precision (32-bit) floating point.
-DbasicSubpixel = zeros(size(leftI), 'single');
+DispMap = zeros(size(leftI), 'single');
 
 % The disparity range defines how many pixels away from the block's location
 % in the first image to search for a matching block in the other image.
-% 50 appears to be a good value for the 450x375 images from the "Cones" 
-% dataset.
-disparityRange = 50;
+%disparityRange = 250;
 
 % Define the size of the blocks for block matching.
-halfBlockSize =3;
+%halfBlockSize =4; %gerade Zahl wählen
 blockSize = 2 * halfBlockSize + 1;
 
 % Get the image dimensions.
 [imgHeight, imgWidth] = size(leftI);
 
 % Epipol berechnen
-e1=null(E');
+%e1=null(F);
 
 % For each row 'm' of pixels in the image...
-for (m = 1 : imgHeight)
+for m = 1 : imgHeight
     	
 	% Set min/max row bounds for the template and blocks.
 	% e.g., for the first row, minr = 1 and maxr = 4
@@ -97,7 +90,7 @@ for (m = 1 : imgHeight)
     maxr = min(imgHeight, m + halfBlockSize);
 	
     % For each column 'n' of pixels in the image...
-    for (n = 1 : imgWidth)
+    for n = 1 : imgWidth
         
 		% Set the min/max column bounds for the template.
 		% e.g., for the first column, minc = 1 and maxc = 4
@@ -114,70 +107,89 @@ for (m = 1 : imgHeight)
 		%
 		% For other images which require searching in both directions, set mind
 		% as follows:
-           mind = max(-disparityRange, 1 - minc);
-		%mind = 0; 
+        mind = max(-disparityRange, 1 - minc);
         maxd = min(disparityRange, imgWidth - maxc);
 
 		% Select the block from the right image to use as the template.
         template = rightI(minr:maxr, minc:maxc);
-		
-		% Get the number of blocks in this search.
-		numBlocks = maxd - mind + 1;
-		
+        
+		% Bestimmen des Mittelpunktes des Fensters(block)
+        CenterPoint=[n;m;1];
+        
+        % Berechnung der Epipolarlinie im linken Bild
+        % Wir benutzen die Epipolarlinien zum Suchen des Korresponierenden
+        % Fensters um/da:
+        %    1.:Die Anzahl der zu überprüfenden Fenster einzuschränken
+        %    2.:Bei uns können die Epipolarlinien (wie in vielen anderen Algorithmen jedoch üblich) 
+        %       nicht als waagerecht angenommen werden. Da die Bilder eine Rotation aufweisen. 
+		l1=F'*CenterPoint;
+        
+        % Berechnung aller Pixel, die auf der Epipolarlinie liegen und im
+        % Bereich der möglichen Verschiebung liegen.
+        Pt1=punkte_auf_linie(l1,left,CenterPoint(1)+mind,CenterPoint(1)+maxd);
+        
+        %Wenn das Fenster zu nah am Rand ist, kann die Verschiebung nicht
+        %berechnet werden. Daher werden die Fenster darauf überprüft und
+        %ggf. gleich null gesetzt um sie im darauffolgenden Schritt aus der
+        %Epipolarlinie zu löschen
+        Pt1(:,Pt1(2,:)<halfBlockSize+1)=0;
+        Pt1(:,Pt1(2,:)>imgHeight-halfBlockSize-1)=0;
+        Pt1(:,Pt1(1,:)==0)=[];
+        Pt1(:,Pt1(2,:)==0)=[];
+        
+        % Get the number of blocks in this search.
+		numBlocks = size(Pt1,2);
+        
 		% Create a vector to hold the block differences.
 		blockDiffs = zeros(numBlocks, 1);
         
         
-		
-		% Calculate the difference between the template and each of the blocks.
-		for (i = mind : maxd)
-		
-% 			% Select the block from the left image at the distance 'i'.
- 			block = leftI(minr:maxr, (minc + i):(maxc + i));
-            
-            
+		if size(Pt1,2)>1
+            % Calculate the difference between the template and each of the blocks.
+            for i = 1 : size(Pt1,2)
 
+                % Select the block from the left image at the distance 'i'.
+                block = leftI(Pt1(2,i)-(m-minr):Pt1(2,i)+(maxr-m), Pt1(1,i)-(n-minc):Pt1(1,i)+(maxc-n));
+                
+                % Take the sum of absolute differences (SAD) between the template
+                % and the block and store the resulting value.
+                blockDiffs(i, 1) = sum(sum(abs(template - block)));
+            end
 
-			% Compute the 1-based index of this block into the 'blockDiffs' vector.
-			blockIndex = i - mind + 1;
-		
-			% Take the sum of absolute differences (SAD) between the template
-			% and the block and store the resulting value.
-			blockDiffs(blockIndex, 1) = sum(sum(abs(template - block)));
-		end
-		
-		% Sort the SAD values to find the closest match (smallest difference).
-		% Discard the sorted vector (the "~" notation), we just want the list
-		% of indices.
-		[temp, sortedIndeces] = sort(blockDiffs);
-		
-		% Get the 1-based index of the closest-matching block.
-		bestMatchIndex = sortedIndeces(1, 1);
-		
-		% Convert the 1-based index of this block back into an offset.
-		% This is the final disparity value produced by basic block matching.
-		d = bestMatchIndex + mind - 1;
-			
-		% Calculate a sub-pixel estimate of the disparity by interpolating.
-		% Sub-pixel estimation requires a block to the left and right, so we 
-		% skip it if the best matching block is at either edge of the search
-		% window.
-		if ((bestMatchIndex == 1) || (bestMatchIndex == numBlocks))
-			% Skip sub-pixel estimation and store the initial disparity value.
-			DbasicSubpixel(m, n) = d;
-		else
-			% Grab the SAD values at the closest matching block (C2) and it's 
-			% immediate neighbors (C1 and C3).
-			C1 = blockDiffs(bestMatchIndex - 1);
-			C2 = blockDiffs(bestMatchIndex);
-			C3 = blockDiffs(bestMatchIndex + 1);
-			
-			% Adjust the disparity by some fraction.
-			% We're estimating the subpixel location of the true best match.
-			DbasicSubpixel(m, n) = d - (0.5 * (C3 - C1) / (C1 - (2*C2) + C3));
-		end
+            % Sort the SAD values to find the closest match (smallest difference).
+            % Discard the sorted vector (the "~" notation), we just want the list
+            % of indices.
+            [temp, sortedIndeces] = sort(blockDiffs);
+
+            % Get the 1-based index of the closest-matching block.
+            bestMatchIndex = sortedIndeces(1, 1);
+
+            % Convert the 1-based index of this block back into an offset.
+            % This is the final disparity value produced by basic block matching.
+            d = bestMatchIndex + mind - 1;
+
+            % Calculate a sub-pixel estimate of the disparity by interpolating.
+            % Sub-pixel estimation requires a block to the left and right, so we 
+            % skip it if the best matching block is at either edge of the search
+            % window.
+            if ((bestMatchIndex == 1) || (bestMatchIndex == numBlocks))
+                % Skip sub-pixel estimation and store the initial disparity value.
+                DispMap(m, n) = d;
+            else
+                % Grab the SAD values at the closest matching block (C2) and it's 
+                % immediate neighbors (C1 and C3).
+                C1 = blockDiffs(bestMatchIndex - 1);
+                C2 = blockDiffs(bestMatchIndex);
+                C3 = blockDiffs(bestMatchIndex + 1);
+
+                % Adjust the disparity by some fraction.
+                % We're estimating the subpixel location of the true best match.
+                DispMap(m, n) = d - (0.5 * (C3 - C1) / (C1 - (2*C2) + C3));
+            end
+        else
+                DispMap(m, n) =0;
+        end
     end
-
 	% Update progress every 10th row.
 	if (mod(m, 10) == 0)
 		fprintf('  Image row %d / %d (%.0f%%)\n', m, imgHeight, (m / imgHeight) * 100);
@@ -186,13 +198,13 @@ for (m = 1 : imgHeight)
 end
 
 % Display compute time.
-elapsed = toc();
-fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
+% elapsed = toc();
+% fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 % =========================================
 %        Visualize Disparity Map
 % =========================================
-
+if do_plot==true
 fprintf('Displaying disparity map...\n');
 
 
@@ -206,7 +218,7 @@ clf;
 % Passing an empty matrix as the second argument tells imshow to take the
 % minimum and maximum values of the data and map the data range to the 
 % display colors.
-imagesc(DbasicSubpixel);
+imagesc(DispMap);
 
 % Configure the axes to properly display an image.
 axis image;
@@ -227,3 +239,5 @@ colorbar;
 % Set the title to display.
 title(strcat('Basic block matching, Sub-px acc., Search right, Block size = ', num2str(blockSize)));
 end
+end
+
