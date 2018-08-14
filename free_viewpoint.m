@@ -27,6 +27,9 @@ clearvars T1 R1 T2 R2
 
 %% Berechnen der Disparitymap
 
+Iblur=wiener2(image1,[30 30]);
+imagesc(Iblur);
+
 % Define the size of the blocks for block matching.
 halfBolcksize=4; %gerade Zahl wählen!!
 % The disparity range defines how many pixels away from the block's location
@@ -34,9 +37,17 @@ halfBolcksize=4; %gerade Zahl wählen!!
 %Die 250 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
 %Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
 %wie viele Pixel diese Punkte auseinander liegen.
-disparityRange=250;
+disparityRange=360;
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,false);
+%DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,false);
+
+
+%DepthMap=depthCalculation(f,E,DispMap);
+%Filter
+%load('dispmap_250');
+
+% Iblur=wiener2(DispMap,[30 30]);
+% imagesc(DispMap);
 
 %% Berechnung des Zwischenbildes
 f=32;%Aus Bildinformationen (f=focuslength)

@@ -69,7 +69,7 @@ DispMap = zeros(size(leftI), 'single');
 
 % The disparity range defines how many pixels away from the block's location
 % in the first image to search for a matching block in the other image.
-%disparityRange = 250;
+disparityRange = 360;
 
 % Define the size of the blocks for block matching.
 %halfBlockSize =4; %gerade Zahl wählen
