@@ -34,9 +34,13 @@ halfBolcksize=4; %gerade Zahl wählen!!
 %Die 250 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
 %Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
 %wie viele Pixel diese Punkte auseinander liegen.
-disparityRange=250;
+disparityRange=50;
+tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,false);
+DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+% Display compute time.
+elapsed = toc();
+fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
 f=32;%Aus Bildinformationen (f=focuslength)

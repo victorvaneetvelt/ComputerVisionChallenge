@@ -107,7 +107,7 @@ for m = 1 : imgHeight
 		%
 		% For other images which require searching in both directions, set mind
 		% as follows:
-        mind = max(-disparityRange, 1 - minc);
+        mind = 0;
         maxd = min(disparityRange, imgWidth - maxc);
 
 		% Select the block from the right image to use as the template.

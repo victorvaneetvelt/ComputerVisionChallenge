@@ -1,0 +1,1 @@
+The real world size of the checkerboard squares is 3cm x 3cm.

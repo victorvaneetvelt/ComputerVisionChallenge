@@ -10,9 +10,9 @@ members = {'Christian Geiger','Moritz Eckhoff'};
  mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de'};
 
 %% Load images
-Image_L1 = imread('img/L2.JPG');
+Image_L1 = imread('img/left.png');
 %Image_L2 = imread('img/L2.JPG');
-Image_R1 = imread('img/R2.JPG');
+Image_R1 = imread('img/right.png');
 %Image_R2 = imread('img/R2.JPG');
 
 %% Free Viewpoint Rendering
