@@ -37,7 +37,9 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=50;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+load('DispMap_MATLAB.mat', 'DispMap') 
+%DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+
 % Display compute time.
 elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
@@ -46,7 +48,8 @@ fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 f=0.032;%Aus Bildinformationen (f=focuslength)
 %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
 %Bild mit den Tiefen des rechten Bildes
-output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange);
+baseline = lambda_Korr_robust(end); %chose last element -> 2. col last element
+output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange, baseline);
 
 
 
