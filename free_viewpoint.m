@@ -37,8 +37,9 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=50;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('DispMap_MATLAB.mat', 'DispMap') 
+load('DispMap_left_right.mat', 'DispMap') 
 %DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+%save('DispMap_left_right.mat', 'DispMap') 
 
 % Display compute time.
 elapsed = toc();
