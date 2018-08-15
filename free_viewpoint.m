@@ -43,7 +43,7 @@ elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
-f=32;%Aus Bildinformationen (f=focuslength)
+f=0.032;%Aus Bildinformationen (f=focuslength)
 %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
 %Bild mit den Tiefen des rechten Bildes
 output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange);
