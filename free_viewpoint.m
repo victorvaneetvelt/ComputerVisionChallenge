@@ -22,7 +22,7 @@ load('K.mat');
 E = achtpunktalgorithmus(Korrespondenzen_robust, K);
 F = achtpunktalgorithmus(Korrespondenzen_robust);
 [T1, R1, T2, R2]=TR_aus_E(E);
-[T,R,lambda_Korr_robust]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
+[T,R,~,baseline]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
 clearvars T1 R1 T2 R2
 
 %% Berechnen der Disparitymap
@@ -49,7 +49,6 @@ fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 f=0.032;%Aus Bildinformationen (f=focuslength)
 %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
 %Bild mit den Tiefen des rechten Bildes
-baseline = lambda_Korr_robust(end); %chose last element -> 2. col last element
 output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange, baseline);
 
 

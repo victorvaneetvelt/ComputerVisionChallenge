@@ -1,4 +1,4 @@
-function [T, R, lambda] = rekonstruktion(T1, T2, R1, R2, Korrespondenzen, K, varargin)
+function [T, R, lambda, Gamma] = rekonstruktion(T1, T2, R1, R2, Korrespondenzen, K, varargin)
     %% Preparation
     p=inputParser;
     addOptional(p,'do_plot',false, @(x) islogical(x));
@@ -14,7 +14,8 @@ function [T, R, lambda] = rekonstruktion(T1, T2, R1, R2, Korrespondenzen, K, var
     x2=K^-1*x2;
     d=zeros(size(Korrespondenzen,2),2);
     d_cell={d,d,d,d};
-    
+    Gamma=0;
+    Gamma_cell={Gamma,Gamma,Gamma,Gamma};
     %% Gleichungssystem
     for i=1:1:4
         M1=zeros(size(Korrespondenzen,2)*3,size(Korrespondenzen,2)+1);
@@ -29,9 +30,10 @@ function [T, R, lambda] = rekonstruktion(T1, T2, R1, R2, Korrespondenzen, K, var
         d1=v(:,end);
         [~,~,v]=svd(M2);
         d2=v(:,end);
+        Gamma_cell{i}=(abs(d1(end,end))+abs(d2(end,end)))/2;% Hier Mittelwert bilden, falls die Gammas kleine Unterschiede haben um dadurch die Genauigkeit zu erhöhen. 
         d1=d1/d1(end,end);
         d2=d2/d2(end,end);
-        d_cell{i}=[d1(1:end-1),d2(1:end-1)];
+        d_cell{i}=[d1(1:end-1),d2(1:end-1)]; %Hier wird der Gammawert aus dem Lambdavektor gelöscht
      end
     a=zeros(4,1);
     a(1)=size(d_cell{1}(d_cell{1}>=0),1);
@@ -42,6 +44,7 @@ function [T, R, lambda] = rekonstruktion(T1, T2, R1, R2, Korrespondenzen, K, var
     T=T_cell{index};
     R=R_cell{index};
     lambda=d_cell{index};
+    Gamma=Gamma_cell{index};
     
     %% Darstellung
     if do_plot==true
