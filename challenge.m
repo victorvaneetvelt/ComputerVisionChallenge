@@ -21,7 +21,7 @@ tic
 %Ansicht zwischen Bilder in Prozent
 p=0.5;
 %running free_viewpoint function
-free_viewpoint(Image_L1, Image_R1, p)
+free_viewpoint(Image_L1, Image_R1, p);
 
 % stop execution timer -> toc;
 toc

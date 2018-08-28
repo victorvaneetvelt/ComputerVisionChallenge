@@ -71,7 +71,7 @@ figure
 imshow(rect2);
 
 [T1, R1, T2, R2]=TR_aus_E(E);
-[T,R,lambda_Korr_robust]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
+[T,R,~,baseline]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
 clearvars T1 R1 T2 R2
 
 %% Berechnen der Disparitymap
@@ -86,16 +86,20 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=50;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+load('DispMap_left_right.mat', 'DispMap') 
+%DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+%save('DispMap_left_right.mat', 'DispMap') 
+
 % Display compute time.
 elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
-f=32;%Aus Bildinformationen (f=focuslength)
+%f=0.024;%Aus Bildinformationen R1 (f=focuslength) 
+f=0.032;%Aus Bildinformationen R2 (f=focuslength)
 %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
 %Bild mit den Tiefen des rechten Bildes
-output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange);
+output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange, baseline);
 
 
 
