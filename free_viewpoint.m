@@ -1,4 +1,4 @@
-function [output_image]  = free_viewpoint(image1, image2, p)
+function [output_image]  = free_viewpoint(image1, image2, p, K)
 % This function generates an image from a virtual viewpoint between two
 % real images. The output image has the same size as the input images.
 
@@ -15,9 +15,6 @@ Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'windo
 
 %%  Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus
 Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
-
-%Kalibrierungsmatrix
-load('K2.mat');
 
 E = achtpunktalgorithmus(Korrespondenzen_robust, K);
 F = achtpunktalgorithmus(Korrespondenzen_robust);
@@ -37,8 +34,8 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=250;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('disprange250_mit_Epipolarlinien.mat');
-%DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+load('DispMap_rectified_Imagepair_1.mat');
+%DispMap=stereoDisparityoriginal(F,image1, image2, halfBolcksize, disparityRange ,true);
 %save('DispMap_left_right.mat', 'DispMap') 
 
 % Display compute time.
@@ -46,12 +43,7 @@ elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
-%f=0.024;%Aus Bildinformationen R1 (f=focuslength) 
-f=0.032;%Aus Bildinformationen R2 (f=focuslength)
 %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
 %Bild mit den Tiefen des rechten Bildes
-output_image = Reconstruction3D(DispMap,image2,K,R,T,f,p,disparityRange, baseline);
-
-
-
+output_image = Reconstruction3D(DispMap,image2,p);
 end

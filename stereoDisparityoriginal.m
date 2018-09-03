@@ -176,38 +176,39 @@ fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 % =========================================
 %        Visualize Disparity Map
 % =========================================
+if do_plot==true
+    fprintf('Displaying disparity map...\n');
 
-fprintf('Displaying disparity map...\n');
 
+    % Switch to figure 1.
+    figure(1);
 
-% Switch to figure 1.
-figure(1);
+    % Clear the current figure window.
+    clf;
 
-% Clear the current figure window.
-clf;
+    % Display the disparity map. 
+    % Passing an empty matrix as the second argument tells imshow to take the
+    % minimum and maximum values of the data and map the data range to the 
+    % display colors.
+    imagesc(DispMap);
 
-% Display the disparity map. 
-% Passing an empty matrix as the second argument tells imshow to take the
-% minimum and maximum values of the data and map the data range to the 
-% display colors.
-image(DispMap, []);
+    % Configure the axes to properly display an image.
+    axis image;
 
-% Configure the axes to properly display an image.
-axis image;
+    % Use the 'jet' color map.
+    % You might also consider removing this line to view the disparity map in
+    % grayscale.
+    colormap('jet');
 
-% Use the 'jet' color map.
-% You might also consider removing this line to view the disparity map in
-% grayscale.
-colormap('jet');
+    % Display the color map legend.
+    colorbar;
 
-% Display the color map legend.
-colorbar;
+    % Specify the minimum and maximum values in the disparity map so that the 
+    % values can be properly mapped into the full range of colors.
+    % If you have negative disparity values, this will clip them to 0.
+    %caxis([0 disparityRange]);
 
-% Specify the minimum and maximum values in the disparity map so that the 
-% values can be properly mapped into the full range of colors.
-% If you have negative disparity values, this will clip them to 0.
-%caxis([0 disparityRange]);
-
-% Set the title to display.
-title(strcat('Basic block matching, Sub-px acc., Search right, Block size = ', num2str(blockSize)));
+    % Set the title to display.
+    title(strcat('Basic block matching, Sub-px acc., Search right, Block size = ', num2str(blockSize)));
+end
 end
