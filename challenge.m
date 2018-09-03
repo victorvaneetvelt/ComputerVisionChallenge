@@ -4,10 +4,10 @@
 group_number = 7;
 
 % Groupmembers:
-members = {'Christian Geiger','Moritz Eckhoff'};
+members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz'};
 
 % Email-Adress (from Moodle!):
- mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de'};
+ mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.de'};
 
 %% Load images
 %Image_L = imread('img/L1.JPG');
