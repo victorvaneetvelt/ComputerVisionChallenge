@@ -210,7 +210,7 @@ function setImages( hObject, handles )
     cla reset;
     imshow( handles.r.rectIm1 );
     Rectification_image1=handles.r.rectIm1;
-    save('rect_im1_2.mat','Rectification_image1');
+    save('rect_im1.mat','Rectification_image1');
     hold on
     handles.r.epi.plotInlierFeatures(1,8);% plot 8 inliers in image 1
     handles.r.epi.plotEpiLine(1,8);
@@ -221,7 +221,7 @@ function setImages( hObject, handles )
     cla reset;
     imshow( handles.r.rectIm2 );
     Rectification_image2=handles.r.rectIm2;
-    save('rect_im2_2.mat','Rectification_image2');
+    save('rect_im2.mat','Rectification_image2');
     hold on
     handles.r.epi.plotInlierFeatures(2,8);% plot 10 inliers in image 2
     handles.r.epi.plotEpiLine(2,8);
