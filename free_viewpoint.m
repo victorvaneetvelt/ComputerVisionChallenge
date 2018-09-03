@@ -17,7 +17,7 @@ Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'windo
 Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
 
 %Kalibrierungsmatrix
-load('K.mat');
+load('K2.mat');
 
 E = achtpunktalgorithmus(Korrespondenzen_robust, K);
 F = achtpunktalgorithmus(Korrespondenzen_robust);
@@ -34,10 +34,10 @@ halfBolcksize=4; %gerade Zahl wählen!!
 %Die 250 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
 %Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
 %wie viele Pixel diese Punkte auseinander liegen.
-disparityRange=50;
+disparityRange=250;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('DispMap_left_right.mat', 'DispMap') 
+load('disprange250_mit_Epipolarlinien.mat');
 %DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
 %save('DispMap_left_right.mat', 'DispMap') 
 
