@@ -37,8 +37,12 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=250;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('disprange250_mit_Epipolarlinien.mat');
-%DispMap=stereoDisparity(F,image1, image2, halfBolcksize, disparityRange ,true);
+
+%load('disprange250_mit_Epipolarlinien.mat');
+load('Rectification_Toolbox/rect_im1.mat');
+load('Rectification_Toolbox/rect_im2.mat');
+DispMap=stereoDisparityoriginal(F,Rectification_image1, Rectification_image2, halfBolcksize, disparityRange ,true);
+
 %save('DispMap_left_right.mat', 'DispMap') 
 
 % Display compute time.
