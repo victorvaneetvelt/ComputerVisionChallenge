@@ -24,8 +24,5 @@ for i=1:size(image,2)
        end
    end
 end
-figure;
-imshow(Reconstruction);
-title('Reconstruction');
 
  end

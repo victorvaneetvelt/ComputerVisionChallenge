@@ -34,7 +34,7 @@ halfBolcksize=4; %gerade Zahl wählen!!
 disparityRange=250;
 tic();
 %das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('DispMap_rectified_Imagepair_1.mat');
+load('DispMap_rectified_Imagepair_2.mat');
 %DispMap=stereoDisparityoriginal(F,image1, image2, halfBolcksize, disparityRange ,true);
 %save('DispMap_left_right.mat', 'DispMap') 
 

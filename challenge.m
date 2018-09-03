@@ -15,8 +15,8 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz'};
 %Image_R = imread('img/R1.JPG');
 %Image_R = imread('img/R2.JPG');
 
-load('img/rect_im_L1.mat');
-load('img/rect_im_R1.mat');
+load('img/rect_im_L2.mat');
+load('img/rect_im_R2.mat');
 Image_L=Rectification_image1;
 Image_R=Rectification_image2;
 %% Kalibrierungsmatrix
@@ -27,7 +27,7 @@ load('K2.mat');
 % start execution timer -> tic;
 tic
 %Ansicht zwischen Bilder in Prozent
-p=0.02;
+p=0.1;
 %running free_viewpoint function
 output_image=free_viewpoint(Image_L, Image_R, p, K);
 
