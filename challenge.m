@@ -27,7 +27,7 @@ load('K2.mat');
 % start execution timer -> tic;
 tic
 %Ansicht zwischen Bilder in Prozent
-p=0.1;
+p=0.6;
 %running free_viewpoint function
 output_image=free_viewpoint(Image_L, Image_R, p, K);
 

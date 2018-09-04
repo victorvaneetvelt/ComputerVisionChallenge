@@ -1,4 +1,4 @@
-function DispMap=stereoDisparityoriginal(F,left, right,halfBlockSize, disparityRange, do_plot)
+function DispMap=stereoDisparityoriginal(left, right,halfBlockSize, disparityRange, do_plot)
 % The following code was adapted from a Mathworks example available here:
 % http://www.mathworks.com/help/vision/examples/stereo-vision.html
 %

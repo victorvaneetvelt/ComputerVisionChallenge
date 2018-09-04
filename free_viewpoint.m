@@ -33,17 +33,36 @@ halfBolcksize=4; %gerade Zahl wählen!!
 %wie viele Pixel diese Punkte auseinander liegen.
 disparityRange=250;
 tic();
-%das Ergebnis liefert eine DisparityMap des rechten Bildes
-load('DispMap_rectified_Imagepair_2.mat');
-%DispMap=stereoDisparityoriginal(F,image1, image2, halfBolcksize, disparityRange ,true);
-%save('DispMap_left_right.mat', 'DispMap') 
-
+% Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
+% Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
+if p<0.5
+    %das Ergebnis liefert eine DisparityMap des linken Bildes
+    load('DispMap_rectified_Imagepair_2_left.mat');
+    %DispMap=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,true);
+    %save('DispMap_rectified_Imagepair_2_left.mat', 'DispMap') 
+else
+    %das Ergebnis liefert eine DisparityMap des rechten Bildes
+    load('DispMap_rectified_Imagepair_2_right.mat');
+    %DispMap=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,true);
+    %save('DispMap_rectified_Imagepair_2_right.mat', 'DispMap')
+end
 % Display compute time.
 elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
-%Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
-%Bild mit den Tiefen des rechten Bildes
-output_image = Reconstruction3D(DispMap,image2,p);
+
+% Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
+% Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
+if p<0.5
+    
+    %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem linken
+    %Bild mit den Tiefen des linken Bildes
+    output_image = Reconstruction3D(DispMap,image1,p);
+else
+
+    %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
+    %Bild mit den Tiefen des rechten Bildes
+    output_image = Reconstruction3D(DispMap,image2,1-p);
+end
 end
