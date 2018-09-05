@@ -1,5 +1,6 @@
 function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRange, do_plot)
     tic;
+    %% Remove this for normal include
     load('img/rect_im_L2.mat');
     load('img/rect_im_R2.mat');
     
@@ -44,16 +45,14 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     weightedMask = cast(weightedMask','single');
     weightedMask_tree_color = permute(repmat(weightedMask, [1,1,3]), [3 1 2]);
     weightedMask_tree_color = weightedMask_tree_color(:,:); %block to vector
-    weightedMask_lead_1 = reshape(weightedMask_tree_color, [1,size(weightedMask_tree_color)]);
      
     %% Create DispMap
-    %DispMap = zeros(l_Height, l_Wide, 1, 'uint16');    
     DispMap = zeros(l_Height - halfBlockSize*2 , l_Wide, 1, 'single'); 
     
     %% Image limits
-    col_limit = r_Height - blockSize;
-    r_wide_limit=  r_Wide - blockSize;
-    l_wid_limit = l_Wide - blockSize;
+    col_limit = r_Height - blockSize + 1;
+    r_wide_limit=  r_Wide - blockSize + 1;
+    l_wid_limit = l_Wide - blockSize + 1;
     
     
     %% Calculate dispmap
@@ -64,9 +63,8 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
             block = right(y:y+blockSize-1, x:x+blockSize-1,:);
             block = permute(block, [3 1 2]);
             block = block(:,:); % Block to vector
-            right_line(x,:,:) = block;
-            right_line(x,:,:) = weightedMask_lead_1.*  right_line(x,:,:,:);
-        end
+            right_line(x,:,:) = weightedMask_tree_color.* block;
+         end
         %% Set left line
         for x = 1 : 1: l_wid_limit
             left_block = permute(left(y:y+blockSize-1, x:x+blockSize-1,:), [3 1 2]);
@@ -89,10 +87,12 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
             DispMap(y,x) = NCC_max_index + disparityRange(1) -1;
         end
         if (mod(y, 10) == 0)
-            fprintf('  Image row %d / %d (%.0f%%)\n', y, col_limit, (y / col_limit) * 100);
+            elapsed_time = toc;
+            fprintf('  Image row %d / %d (%.0f%%)', y, col_limit, (y / col_limit) * 100);
+            fprintf(' time %.2f min.\n', elapsed_time / 60.0);
         end
     end
-    save('DispMap_with_color_400_9.mat', 'DispMap', 'blockSize', 'disparityRange');
+    save('DispMap_with_color_400_1.mat', 'DispMap', 'blockSize', 'disparityRange');
 
     figure;
     imshow(DispMap, disparityRange);
@@ -103,26 +103,4 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     
     elapsed_time = toc
     fprintf('Calculating disparity map took %.2f min.\n', elapsed_time / 60.0);
-   hans =2 ; 
-end
-function  right_line = build_right_line(right,y, r_Wide, blockSize)
-        for x = 1 : 1: r_Wide - blockSize
-            right_line(x,:,:,:) = permute(right(y:y+blockSize-1, x:x+blockSize-1,:), [3 1 2]);
-            %right_line(x,:,:,:) = double(right_line(x,:,:,:));
-            %right_line(x,:,:,:) = weightedMask_lead_1.*  right_line(x,:,:,:);
-        end
-end
-
-
-function sub_pixel = sub_pixel_computation(area_pixel)
-            % values are the values 
-			% Grab the SAD values at the closest matching block (C2) and it's 
-			% immediate neighbors (C1 and C3).
-			C1 = area_pixel(1);
-			C2 = area_pixel(2)
-			C3 = area_pixel(3);
-			
-			% Adjust the disparity by some fraction.
-			% We're estimating the subpixel location of the true best match.
-			sub_pixel = d - (0.5 * (C3 - C1) / (C1 - (2*C2) + C3));
 end
