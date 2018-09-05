@@ -78,7 +78,6 @@ blockSize = 2 * halfBlockSize + 1;
 
 % Get the image dimensions.
 [imgHeight, imgWidth] = size(left);
-
 % For each row 'm' of pixels in the image...
 for (m = 1 : imgHeight)
     	
@@ -88,7 +87,7 @@ for (m = 1 : imgHeight)
     maxr = min(imgHeight, m + halfBlockSize);
 	
     % For each column 'n' of pixels in the image...
-    for (n = 1 : imgWidth)
+    for (n = 1 : imgWidth/40)
         
 		% Set the min/max column bounds for the template.
 		% e.g., for the first column, minc = 1 and maxc = 4
@@ -135,7 +134,7 @@ for (m = 1 : imgHeight)
 		% Sort the SAD values to find the closest match (smallest difference).
 		% Discard the sorted vector (the "~" notation), we just want the list
 		% of indices.
-		[temp, sortedIndeces] = sort(blockDiffs);
+		[~, sortedIndeces] = sort(blockDiffs);
 		
 		% Get the 1-based index of the closest-matching block.
 		bestMatchIndex = sortedIndeces(1, 1);

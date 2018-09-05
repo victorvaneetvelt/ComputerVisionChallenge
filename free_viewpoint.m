@@ -16,6 +16,22 @@ Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'windo
 %%  Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus
 Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
 
+fig = figure(2);
+fig.NumberTitle = 'off';
+fig.Name = 'KP robust';
+imshow(IGray1);
+hold on;
+h = imshow(IGray1);      
+alpha=0.5;
+set(h, 'AlphaData', alpha);
+for i=1:size(Korrespondenzen_robust,2)
+    plot(Korrespondenzen_robust(1,i),Korrespondenzen_robust(2,i),'r+','MarkerSize',10);
+    plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+    plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+    plot([Korrespondenzen_robust(1,i) Korrespondenzen_robust(3,i)], [Korrespondenzen_robust(2,i) Korrespondenzen_robust(4,i)],'g-','MarkerSize',10);
+end
+hold off
+
 E = achtpunktalgorithmus(Korrespondenzen_robust, K);
 F = achtpunktalgorithmus(Korrespondenzen_robust);
 [T1, R1, T2, R2]=TR_aus_E(E);
@@ -28,10 +44,11 @@ clearvars T1 R1 T2 R2
 halfBolcksize=4; %gerade Zahl wählen!!
 % The disparity range defines how many pixels away from the block's location
 % in the first image to search for a matching block in the other image.
-%Die 300 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
+
+%Die 400 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
 %Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
 %wie viele Pixel diese Punkte auseinander liegen.
-disparityRange=300;
+disparityRange=400;
 tic();
 % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 

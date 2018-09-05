@@ -19,6 +19,7 @@ load('img/rect_im_L2.mat');
 load('img/rect_im_R2.mat');
 Image_L=Rectification_image1;
 Image_R=Rectification_image2;
+
 %% Kalibrierungsmatrix
 load('K2.mat');
 %load('K1.mat');
