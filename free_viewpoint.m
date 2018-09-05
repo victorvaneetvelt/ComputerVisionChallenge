@@ -1,4 +1,4 @@
-function [output_image]  = free_viewpoint(image1, image2, p, K)
+function [output_image]  = free_viewpoint(image1, image2,left_original,right_original, p, K)
 % This function generates an image from a virtual viewpoint between two
 % real images. The output image has the same size as the input images.
 
@@ -28,24 +28,26 @@ clearvars T1 R1 T2 R2
 halfBolcksize=4; %gerade Zahl wählen!!
 % The disparity range defines how many pixels away from the block's location
 % in the first image to search for a matching block in the other image.
-%Die 250 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
+%Die 300 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
 %Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
 %wie viele Pixel diese Punkte auseinander liegen.
-disparityRange=250;
+disparityRange=300;
 tic();
 % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-if p<0.5
+
     %das Ergebnis liefert eine DisparityMap des linken Bildes
     load('DispMap_rectified_Imagepair_2_left.mat');
+    DispMapLeft=DispMap;
     %DispMap=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,true);
     %save('DispMap_rectified_Imagepair_2_left.mat', 'DispMap') 
-else
+
     %das Ergebnis liefert eine DisparityMap des rechten Bildes
     load('DispMap_rectified_Imagepair_2_right.mat');
+    DispMapRight=DispMap;
     %DispMap=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,true);
     %save('DispMap_rectified_Imagepair_2_right.mat', 'DispMap')
-end
+
 % Display compute time.
 elapsed = toc();
 fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
@@ -54,15 +56,12 @@ fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-if p<0.5
-    
-    %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem linken
-    %Bild mit den Tiefen des linken Bildes
-    output_image = Reconstruction3D(DispMap,image1,p);
-else
 
-    %Das Ergebnis beinhaltet das FreeViewPointBild berechnet aus dem rechten
-    %Bild mit den Tiefen des rechten Bildes
-    output_image = Reconstruction3D(DispMap,image2,1-p);
-end
+    %Das Ergebnis beinhaltet das FreeViewPointBild 
+    output_image = Reconstruction3D(DispMapLeft,DispMapRight,image1,image2,p);
+    if p<0.5
+        output_image=postprocessing(output_image,left_original);
+    else
+        output_image=postprocessing(output_image,right_original);
+    end
 end
