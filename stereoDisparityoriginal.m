@@ -59,6 +59,8 @@ tic();
 
 % Convert the images from RGB to grayscale by averaging the three color 
 % channels.
+left = mean(left, 3);
+right = mean(right, 3);
 
 % DispMap will hold the result of the block matching. 
 % The values will be 'single' precision (32-bit) floating point.

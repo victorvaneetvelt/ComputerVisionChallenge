@@ -11,9 +11,9 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz'};
 
 %% Load images
 %Image_L = imread('img/L1.JPG');
-%Image_L = imread('img/L2.JPG');
+Image_L_original = imread('img/L2.JPG');
 %Image_R = imread('img/R1.JPG');
-%Image_R = imread('img/R2.JPG');
+Image_R_original = imread('img/R2.JPG');
 
 load('img/rect_im_L2.mat');
 load('img/rect_im_R2.mat');
@@ -28,15 +28,19 @@ load('K2.mat');
 % start execution timer -> tic;
 tic
 %Ansicht zwischen Bilder in Prozent
-p=0.6;
+for p=0:0.05:1
+
+%p=0.0;
 %running free_viewpoint function
-output_image=free_viewpoint(Image_L, Image_R, p, K);
+output_image=free_viewpoint(Image_L, Image_R,Image_L_original,Image_R_original, p, K);
 
 % stop execution timer -> toc;
-toc
-elapsed_time = toc;
+
 
 %% Display Output
 % Display Virtual View
+figure;
 imshow(output_image);
-
+end
+toc
+elapsed_time = toc;
