@@ -6,11 +6,6 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     left = Rectification_image1;
     right = Rectification_image2;
     clearvars Rectification_image1 Rectification_image2
-    %left =  mean(Rectification_image1, 3); % to grey
-    %right = mean(Rectification_image2, 3); % to grey
-
-    %% Sizes 
-    %[r_Height, r_Wide, r_deep] = size(right);
 
     %% Add Top and Bottom Border to right Image
     right = [zeros(halfBlockSize,size(right,2),3); 
@@ -32,12 +27,12 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     left = single(left);
     [l_Height,  l_Wide, l_deep] = size(left);
      
-  %% Create DispMap
-    DispMap = zeros(l_Height, l_Wide, 1, 'single');    
+ 
     
     %% Right Image to Blocks
     blockSize = halfBlockSize*2+1;
-    right_line = zeros(r_Wide,r_deep,blockSize,blockSize, 'single');
+    %right_line = zeros(r_Wide,r_deep,blockSize,blockSize, 'single');
+    right_line = zeros(r_Wide,r_deep,blockSize^2, 'single');
     
     %% Weighting Mask
     segment = -(blockSize-1)/2:1:(blockSize-1)/2;
@@ -48,50 +43,56 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     %weightedMask_u = cast(1000*weightedMask','uint');
     weightedMask = cast(weightedMask','single');
     weightedMask_tree_color = permute(repmat(weightedMask, [1,1,3]), [3 1 2]);
+    weightedMask_tree_color = weightedMask_tree_color(:,:); %block to vector
     weightedMask_lead_1 = reshape(weightedMask_tree_color, [1,size(weightedMask_tree_color)]);
      
-    %% NCC_lines
-    %NCC = zeros(l_Wide, displacement_range);
+    %% Create DispMap
+    %DispMap = zeros(l_Height, l_Wide, 1, 'uint16');    
+    DispMap = zeros(l_Height - halfBlockSize*2 , l_Wide, 1, 'single'); 
+    
     %% Image limits
     col_limit = r_Height - blockSize;
     r_wide_limit=  r_Wide - blockSize;
     l_wid_limit = l_Wide - blockSize;
     
+    
+    %% Calculate dispmap
     for y = 1:1:col_limit % iterate over all col
-    %y = 1
-   
         %% Set right line
         %right_line = build_right_line(right,y, r_Wide, blockSize);
         for x = 1 : 1: r_wide_limit
-            k = right(y:y+blockSize-1, x:x+blockSize-1,:);
-            right_line(x,:,:,:) = permute(k, [3 1 2]);
-            right_line(x,:,:,:) = weightedMask_lead_1.*  right_line(x,:,:,:);
+            block = right(y:y+blockSize-1, x:x+blockSize-1,:);
+            block = permute(block, [3 1 2]);
+            block = block(:,:); % Block to vector
+            right_line(x,:,:) = block;
+            right_line(x,:,:) = weightedMask_lead_1.*  right_line(x,:,:,:);
         end
         %% Set left line
         for x = 1 : 1: l_wid_limit
             left_block = permute(left(y:y+blockSize-1, x:x+blockSize-1,:), [3 1 2]);
-            left_block = weightedMask_tree_color.* left_block;
-            left_frame =repmat(left_block(),[1,1,1,displacement_range]);
-            right_frame =  permute(right_line(x:x+displacement_range-1,:,:,:), [2 3 4 1]);
-            %diff = bsxfun(@minus, left_block, right_frame); % takes longer
-            %SAP = sum(sum(sum(abs(diff),1),2),3);
-            SAP = sum(sum(sum(abs(left_frame - right_frame),1),2),3);
+            left_vector = left_block(:,:);
+            left_vector = weightedMask_tree_color.* left_vector;
+            left_frame =repmat(left_vector(),[1,1,displacement_range]);
+            left_frame = permute(left_frame, [3 1 2]); % dim: displacement color block
+            right_frame = right_line(x:x+displacement_range-1,:,:);
+            SAP = sum(sum(abs(left_frame - right_frame),2),3);
             [~, NCC_max_index] = min(SAP(:),[],1);
-            %list = sort(SAP(:),1);
-            %NCC_max_index = list(1);
-            if NCC_max_index > 1 && NCC_max_index+1<size(NCC_max_index,4)
-                C1 = SAP(1,1,1,NCC_max_index-1);
-                C2 = SAP(1,1,1,NCC_max_index);
-                C3 = SAP(1,1,1,NCC_max_index+1);
+             
+            
+            if NCC_max_index > 1 && NCC_max_index+1<size(SAP,1)
+                C1 = SAP(NCC_max_index-1);
+                C2 = SAP(NCC_max_index);
+                C3 = SAP(NCC_max_index+1);
                 NCC_max_index = NCC_max_index - (0.5 * (C3 - C1) / (C1 - (2*C2) + C3));
             end
+            
             DispMap(y,x) = NCC_max_index + disparityRange(1) -1;
         end
         if (mod(y, 10) == 0)
             fprintf('  Image row %d / %d (%.0f%%)\n', y, col_limit, (y / col_limit) * 100);
         end
     end
-    save('DispMap_with_color_250_9.mat', 'DispMap', 'blockSize', 'disparityRange');
+    save('DispMap_with_color_400_9.mat', 'DispMap', 'blockSize', 'disparityRange');
 
     figure;
     imshow(DispMap, disparityRange);
