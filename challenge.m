@@ -21,7 +21,7 @@ Image_L=Rectification_image1;
 Image_R=Rectification_image2;
 
 %% Kalibrierungsmatrix
-%load('K2.mat');
+load('K2.mat');
 %load('K1.mat');
 
 %% Definieren des Scaling Faktors

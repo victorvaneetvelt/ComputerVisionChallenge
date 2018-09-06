@@ -1,42 +1,42 @@
 function [output_image]  = free_viewpoint(image1, image2,left_original,right_original, p, K,halfBolcksize,disparityRange)
 % This function generates an image from a virtual viewpoint between two
 % real images. The output image has the same size as the input images.
-
-%In Grauwertbilder konvertieren
-IGray1=rgb_to_gray(image1);
-IGray2=rgb_to_gray(image2);
-
-% Harris-Merkmale berechnen
- Merkmale1 = harris_detektor(IGray1,'segment_length',9,'k',0.04,'min_dist',50,'N',20,'do_plot',false);
- Merkmale2 = harris_detektor(IGray2,'segment_length',9,'k',0.04,'min_dist',50,'N',20,'do_plot',false);
-
-%% Korrespondenzschaetzung
-Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'window_length',25,'min_corr',0.9,'do_plot',false);
-
-%%  Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus
-Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
 % 
-% fig = figure(2);
-% fig.NumberTitle = 'off';
-% fig.Name = 'KP robust';
-% imshow(IGray1);
-% hold on;
-% h = imshow(IGray1);      
-% alpha=0.5;
-% set(h, 'AlphaData', alpha);
-% for i=1:size(Korrespondenzen_robust,2)
-%     plot(Korrespondenzen_robust(1,i),Korrespondenzen_robust(2,i),'r+','MarkerSize',10);
-%     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
-%     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
-%     plot([Korrespondenzen_robust(1,i) Korrespondenzen_robust(3,i)], [Korrespondenzen_robust(2,i) Korrespondenzen_robust(4,i)],'g-','MarkerSize',10);
-% end
-% hold off
-
-E = achtpunktalgorithmus(Korrespondenzen_robust, K);
-F = achtpunktalgorithmus(Korrespondenzen_robust);
-[T1, R1, T2, R2]=TR_aus_E(E);
-[T,R,~,baseline]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
-clearvars T1 R1 T2 R2
+% %In Grauwertbilder konvertieren
+% IGray1=rgb_to_gray(image1);
+% IGray2=rgb_to_gray(image2);
+% 
+% % Harris-Merkmale berechnen
+%  Merkmale1 = harris_detektor(IGray1,'segment_length',9,'k',0.04,'min_dist',50,'N',20,'do_plot',false);
+%  Merkmale2 = harris_detektor(IGray2,'segment_length',9,'k',0.04,'min_dist',50,'N',20,'do_plot',false);
+% 
+% %% Korrespondenzschaetzung
+% Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'window_length',25,'min_corr',0.9,'do_plot',false);
+% 
+% %%  Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus
+% Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
+% % 
+% % fig = figure(2);
+% % fig.NumberTitle = 'off';
+% % fig.Name = 'KP robust';
+% % imshow(IGray1);
+% % hold on;
+% % h = imshow(IGray1);      
+% % alpha=0.5;
+% % set(h, 'AlphaData', alpha);
+% % for i=1:size(Korrespondenzen_robust,2)
+% %     plot(Korrespondenzen_robust(1,i),Korrespondenzen_robust(2,i),'r+','MarkerSize',10);
+% %     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+% %     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+% %     plot([Korrespondenzen_robust(1,i) Korrespondenzen_robust(3,i)], [Korrespondenzen_robust(2,i) Korrespondenzen_robust(4,i)],'g-','MarkerSize',10);
+% % end
+% % hold off
+% 
+% E = achtpunktalgorithmus(Korrespondenzen_robust, K);
+% F = achtpunktalgorithmus(Korrespondenzen_robust);
+% [T1, R1, T2, R2]=TR_aus_E(E);
+% [T,R,~,baseline]=rekonstruktion(T1, T2, R1, R2, Korrespondenzen_robust, K, 'do_plot',false);
+% clearvars T1 R1 T2 R2
 
 %% Berechnen der Disparitymap
 
