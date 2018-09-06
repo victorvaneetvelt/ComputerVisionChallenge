@@ -41,16 +41,16 @@ function [output_image]  = free_viewpoint(image1, image2,left_original,right_ori
 %% Berechnen der Disparitymap
 
 
-tic();
+%tic();
 % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-
+    fprintf('Berechnung der linken Disparity Map');
     %das Ergebnis liefert eine DisparityMap des linken Bildes
     %load('DispMap_rectified_Imagepair_2_left.mat');
     %DispMapLeft=DispMap;
     DispMapLeft=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,false);
     %save('DispMap_rectified_Imagepair_2_left_skaling0,75.mat', 'DispMap') 
-
+    fprintf('Berechnung der rechten Disparity Map');
     %das Ergebnis liefert eine DisparityMap des rechten Bildes
     %load('DispMap_rectified_Imagepair_2_right.mat');
     %DispMapRight=DispMap;
@@ -58,16 +58,17 @@ tic();
     %save('DispMap_rectified_Imagepair_2_right_skaling0,75.mat', 'DispMap')
 
 % Display compute time.
-elapsed = toc();
-fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
+%elapsed = toc();
+%fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 %% Berechnung des Zwischenbildes
 
 % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-
+    fprintf('Rekonstruktion wird berechnet');
     %Das Ergebnis beinhaltet das FreeViewPointBild 
     output_image = Reconstruction3D(DispMapLeft,DispMapRight,image1,image2,p);
+    fprintf('Postprocessing wird ausgeführt');
     if p<0.5
         output_image=postprocessing(output_image,left_original);
     else

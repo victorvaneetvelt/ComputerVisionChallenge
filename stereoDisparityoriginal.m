@@ -55,7 +55,7 @@ title('Composite image');
 fprintf('Performing basic block matching...\n');
 
 % Start a timer.
-tic();
+%tic();
 
 % Convert the images from RGB to grayscale by averaging the three color 
 % channels.
@@ -171,8 +171,8 @@ for (m = 1 : imgHeight)
 end
 
 % Display compute time.
-elapsed = toc();
-fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
+%elapsed = toc();
+%fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 % =========================================
 %        Visualize Disparity Map
