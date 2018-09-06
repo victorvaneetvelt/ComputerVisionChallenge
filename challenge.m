@@ -24,16 +24,30 @@ Image_R=Rectification_image2;
 load('K2.mat');
 %load('K1.mat');
 
+%% Definieren des Skaling Faktors
+Skaling=0.75;
+
+%% Define the size of the blocks for block matching.
+halfBolcksize=4; %gerade Zahl wählen!!
+% The disparity range defines how many pixels away from the block's location
+% in the first image to search for a matching block in the other image.
+
+%% Definieren der Disparity range
+%Die 400 sind ein guter Wert für unsere Bilder. Das sieht man wenn man die
+%Koordinaten der zusammenpassenden Merkmalspunkte vergleicht. Also schaut
+%wie viele Pixel diese Punkte auseinander liegen.
+disparityRange=400;
+
 %% Free Viewpoint Rendering
 % start execution timer -> tic;
 tic
 %Ansicht zwischen Bilder in Prozent
 for p=0:0.05:1
 
-%p=0.0;
+%p=0.5;
 %running free_viewpoint function
-output_image=free_viewpoint(Image_L, Image_R,Image_L_original,Image_R_original, p, K);
-
+output_image=free_viewpoint(imresize(Image_L, Skaling), imresize(Image_R, Skaling),imresize(Image_L_original,Skaling),imresize(Image_R_original,Skaling), p, K, halfBolcksize, disparityRange*Skaling);
+output_image=imresize(output_image,1/Skaling);
 % stop execution timer -> toc;
 
 
