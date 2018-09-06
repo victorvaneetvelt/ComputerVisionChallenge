@@ -10,13 +10,13 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz'};
  mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.de'};
 
 %% Load images
-%Image_L = imread('img/L1.JPG');
-Image_L_original = imread('img/L2.JPG');
-%Image_R = imread('img/R1.JPG');
-Image_R_original = imread('img/R2.JPG');
+Image_L_original = imread('img/L1.JPG');
+%Image_L_original = imread('img/L2.JPG');
+Image_R_original = imread('img/R1.JPG');
+%Image_R_original = imread('img/R2.JPG');
 
-load('img/rect_im_L2.mat');
-load('img/rect_im_R2.mat');
+load('img/rect_im_L1.mat');
+load('img/rect_im_R1.mat');
 Image_L=Rectification_image1;
 Image_R=Rectification_image2;
 
@@ -25,7 +25,7 @@ load('K2.mat');
 %load('K1.mat');
 
 %% Definieren des Skaling Faktors
-Skaling=0.75;
+Skaling=1;
 
 %% Define the size of the blocks for block matching.
 halfBolcksize=4; %gerade Zahl wählen!!

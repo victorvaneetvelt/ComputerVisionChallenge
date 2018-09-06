@@ -46,13 +46,13 @@ tic();
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
 
     %das Ergebnis liefert eine DisparityMap des linken Bildes
-    load('DispMap_rectified_Imagepair_2_left_skaling0,5.mat');
+    load('DispMap_rectified_Imagepair_1_left.mat');
     DispMapLeft=DispMap;
     %DispMap=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,true);
     %save('DispMap_rectified_Imagepair_2_left_skaling0,5.mat', 'DispMap') 
 
     %das Ergebnis liefert eine DisparityMap des rechten Bildes
-    load('DispMap_rectified_Imagepair_2_right_skaling0,5.mat');
+    load('DispMap_rectified_Imagepair_1_right.mat');
     DispMapRight=DispMap;
     %DispMap=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,true);
     %save('DispMap_rectified_Imagepair_2_right_skaling0,5.mat', 'DispMap')
