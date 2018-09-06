@@ -15,22 +15,22 @@ Korrespondenzen = punkt_korrespondenzen(IGray1,IGray2,Merkmale1,Merkmale2,'windo
 
 %%  Finde robuste Korrespondenzpunktpaare mit Hilfe des RANSAC-Algorithmus
 Korrespondenzen_robust = F_ransac(Korrespondenzen, 'tolerance', 0.04);
-
-fig = figure(2);
-fig.NumberTitle = 'off';
-fig.Name = 'KP robust';
-imshow(IGray1);
-hold on;
-h = imshow(IGray1);      
-alpha=0.5;
-set(h, 'AlphaData', alpha);
-for i=1:size(Korrespondenzen_robust,2)
-    plot(Korrespondenzen_robust(1,i),Korrespondenzen_robust(2,i),'r+','MarkerSize',10);
-    plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
-    plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
-    plot([Korrespondenzen_robust(1,i) Korrespondenzen_robust(3,i)], [Korrespondenzen_robust(2,i) Korrespondenzen_robust(4,i)],'g-','MarkerSize',10);
-end
-hold off
+% 
+% fig = figure(2);
+% fig.NumberTitle = 'off';
+% fig.Name = 'KP robust';
+% imshow(IGray1);
+% hold on;
+% h = imshow(IGray1);      
+% alpha=0.5;
+% set(h, 'AlphaData', alpha);
+% for i=1:size(Korrespondenzen_robust,2)
+%     plot(Korrespondenzen_robust(1,i),Korrespondenzen_robust(2,i),'r+','MarkerSize',10);
+%     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+%     plot(Korrespondenzen_robust(3,i),Korrespondenzen_robust(4,i),'b+','MarkerSize',10);
+%     plot([Korrespondenzen_robust(1,i) Korrespondenzen_robust(3,i)], [Korrespondenzen_robust(2,i) Korrespondenzen_robust(4,i)],'g-','MarkerSize',10);
+% end
+% hold off
 
 E = achtpunktalgorithmus(Korrespondenzen_robust, K);
 F = achtpunktalgorithmus(Korrespondenzen_robust);
@@ -46,16 +46,16 @@ tic();
 % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
 
     %das Ergebnis liefert eine DisparityMap des linken Bildes
-    load('DispMap_rectified_Imagepair_1_left.mat');
-    DispMapLeft=DispMap;
-    %DispMap=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,true);
-    %save('DispMap_rectified_Imagepair_2_left_skaling0,5.mat', 'DispMap') 
+    %load('DispMap_rectified_Imagepair_2_left.mat');
+    %DispMapLeft=DispMap;
+    DispMapLeft=stereoDisparityoriginal(image2, image1, halfBolcksize, disparityRange ,false);
+    %save('DispMap_rectified_Imagepair_2_left_skaling0,75.mat', 'DispMap') 
 
     %das Ergebnis liefert eine DisparityMap des rechten Bildes
-    load('DispMap_rectified_Imagepair_1_right.mat');
-    DispMapRight=DispMap;
-    %DispMap=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,true);
-    %save('DispMap_rectified_Imagepair_2_right_skaling0,5.mat', 'DispMap')
+    %load('DispMap_rectified_Imagepair_2_right.mat');
+    %DispMapRight=DispMap;
+    DispMapRight=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,false);
+    %save('DispMap_rectified_Imagepair_2_right_skaling0,75.mat', 'DispMap')
 
 % Display compute time.
 elapsed = toc();

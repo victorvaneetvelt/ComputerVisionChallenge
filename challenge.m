@@ -10,22 +10,22 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz'};
  mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.de'};
 
 %% Load images
-Image_L_original = imread('img/L1.JPG');
-%Image_L_original = imread('img/L2.JPG');
-Image_R_original = imread('img/R1.JPG');
-%Image_R_original = imread('img/R2.JPG');
+%Image_L_original = imread('img/L1.JPG');
+Image_L_original = imread('img/L2.JPG');
+%Image_R_original = imread('img/R1.JPG');
+Image_R_original = imread('img/R2.JPG');
 
-load('img/rect_im_L1.mat');
-load('img/rect_im_R1.mat');
+load('img/rect_im_L2.mat');
+load('img/rect_im_R2.mat');
 Image_L=Rectification_image1;
 Image_R=Rectification_image2;
 
 %% Kalibrierungsmatrix
-load('K2.mat');
+%load('K2.mat');
 %load('K1.mat');
 
-%% Definieren des Skaling Faktors
-Skaling=1;
+%% Definieren des Scaling Faktors
+Scaling=0.3;
 
 %% Define the size of the blocks for block matching.
 halfBolcksize=4; %gerade Zahl wählen!!
@@ -42,12 +42,12 @@ disparityRange=400;
 % start execution timer -> tic;
 tic
 %Ansicht zwischen Bilder in Prozent
-for p=0:0.05:1
+%for p=0:0.05:1
 
-%p=0.5;
+p=0.3;
 %running free_viewpoint function
-output_image=free_viewpoint(imresize(Image_L, Skaling), imresize(Image_R, Skaling),imresize(Image_L_original,Skaling),imresize(Image_R_original,Skaling), p, K, halfBolcksize, disparityRange*Skaling);
-output_image=imresize(output_image,1/Skaling);
+output_image=free_viewpoint(imresize(Image_L, Scaling), imresize(Image_R, Scaling),imresize(Image_L_original,Scaling),imresize(Image_R_original,Scaling), p, K, halfBolcksize, disparityRange*Scaling);
+output_image=imresize(output_image,1/Scaling);
 % stop execution timer -> toc;
 
 
@@ -55,6 +55,6 @@ output_image=imresize(output_image,1/Skaling);
 % Display Virtual View
 figure;
 imshow(output_image);
-end
+%end
 toc
 elapsed_time = toc;
