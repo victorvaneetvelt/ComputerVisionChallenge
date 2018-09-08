@@ -55,7 +55,7 @@ title('Composite image');
 fprintf('Performing basic block matching...\n');
 
 % Start a timer.
-tic();
+%tic();
 
 % Convert the images from RGB to grayscale by averaging the three color 
 % channels.
@@ -87,7 +87,7 @@ for (m = 1 : imgHeight)
     maxr = min(imgHeight, m + halfBlockSize);
 	
     % For each column 'n' of pixels in the image...
-    for (n = 1 : imgWidth/40)
+    for (n = 1 : imgWidth)
         
 		% Set the min/max column bounds for the template.
 		% e.g., for the first column, minc = 1 and maxc = 4
@@ -171,8 +171,8 @@ for (m = 1 : imgHeight)
 end
 
 % Display compute time.
-elapsed = toc();
-fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
+%elapsed = toc();
+%fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
 
 % =========================================
 %        Visualize Disparity Map
