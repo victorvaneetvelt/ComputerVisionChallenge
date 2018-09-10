@@ -3,12 +3,12 @@ function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,dis
 % real images. The output image has the same size as the input images.
 % 
     %%Compute the rectification images
-    %[rect_r, rect_l] = rectify_images(image_r, image_l, false);
-    load 'img/rect_im_L2.mat' Rectification_image1;
-    load 'img/rect_im_R2.mat' Rectification_image2;
+    [rect_r, rect_l] = rectify_images(image_r, image_l, false);
+    %load 'img/rect_im_L2.mat' Rectification_image1;
+    %load 'img/rect_im_R2.mat' Rectification_image2;
     
-    rect_r = Rectification_image1;
-    rect_l = Rectification_image2;
+    %rect_r = Rectification_image1;
+    %rect_l = Rectification_image2;
     
     %{
     figure;
@@ -25,7 +25,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,dis
     image_l = imresize(image_l, Scaling);
   
     %% Compute Disparitymaps 
-    [disp_map_r, disp_map_l] = Disparity_color_by_blocks(rect_r, rect_l, 1,[-400 400]);
+    [disp_map_r, disp_map_l] = Disparity_color_by_blocks(rect_r, rect_l, halfBolcksize,[-400 400]);
     
     %[disp_map_r, disp_map_l] = Disparity_color_total_image(rect_r, rect_l, halfBolcksize,disparityRange);
         
@@ -72,7 +72,7 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
     if isempty( rect_r ) || isempty( rect_l )
         % I doen't work load matlab F matrix
         %load 'F_matlab.mat' 'F';
-        [rect_r, rect_l] = Rectify_copied( image_r, image_l,'do_plot',do_plot);
+        %[rect_r, rect_l] = Rectify_copied( image_r, image_l,'do_plot',do_plot);
     end
     if isempty( rect_r ) || isempty( rect_l )
         disp('Cant compute Rectificate images ');

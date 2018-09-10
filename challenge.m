@@ -11,9 +11,9 @@ mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.d
 
 %% Load images
 %Image_L_original = imread('img/L1.JPG');
-Image_L_original = imread('img/L2.JPG');
+Image_L = imread('img/L2.JPG');
 %Image_R_original = imread('img/R1.JPG');
-Image_R_original = imread('img/R2.JPG');
+Image_R = imread('img/R2.JPG');
 
 %load('img/rect_im_L2.mat');
 %load('img/rect_im_R2.mat');
@@ -26,9 +26,9 @@ load('K2.mat');
 
 %% Definieren des Scaling Faktors
 %Scaling=0.3;
-Scaling=0.1;
+Scaling=0.5;
 %% Define the size of the blocks for block matching.
-halfBolcksize=4; %gerade Zahl wählen!!
+halfBolcksize=2; %gerade Zahl wählen!!
 % The disparity range defines how many pixels away from the block's location
 % in the first image to search for a matching block in the other image.
 
@@ -47,7 +47,7 @@ tic
 p=0.3;
 %running free_viewpoint function
 %% Scaling
-output_image=free_viewpoint(Image_L_original, Image_R_original, p, halfBolcksize, disparityRange, Scaling);
+output_image=free_viewpoint(Image_R, Image_L, p, halfBolcksize, disparityRange, Scaling);
 %% Scaling
 %output_image=free_viewpoint(imresize(Image_L, Scaling), imresize(Image_R, Scaling),imresize(Image_L_original,Scaling),imresize(Image_R_original,Scaling), p, K, halfBolcksize, disparityRange*Scaling);
 %output_image=imresize(output_image,1/Scaling);
