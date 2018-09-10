@@ -3,22 +3,28 @@ function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,dis
 % real images. The output image has the same size as the input images.
 % 
     %%Compute the rectification images
-    [rect_r, rect_l] = rectify_images(image_r, image_l);
-    %load 'img/rect_im_L2.mat' Rectification_image1;
-    %load 'img/rect_im_R2.mat' Rectification_image2;
+    %[rect_r, rect_l] = rectify_images(image_r, image_l, false);
+    load 'img/rect_im_L2.mat' Rectification_image1;
+    load 'img/rect_im_R2.mat' Rectification_image2;
     
-    %rect_r = Rectification_image1;
-    %rect_l = Rectification_image2;
- 
+    rect_r = Rectification_image1;
+    rect_l = Rectification_image2;
     
-    
+    %{
+    figure;
+    imshow(rect_l);
+    title(' rect im L2' );
+    figure;
+    imshow(rect_r);
+    title(' rect im R2' );
+    %}
     %% Scale down image for computation performance
     rect_r = imresize(rect_r, Scaling);
     rect_l = imresize(rect_l, Scaling);
     image_r = imresize(image_r, Scaling);
     image_l = imresize(image_l, Scaling);
   
-    %% Compute Disparitymaps       git
+    %% Compute Disparitymaps 
     [disp_map_r, disp_map_l] = Disparity_color_by_blocks(rect_r, rect_l, 1,[-400 400]);
     
     %[disp_map_r, disp_map_l] = Disparity_color_total_image(rect_r, rect_l, halfBolcksize,disparityRange);
@@ -31,7 +37,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,dis
     output_image=imresize(output_image,1/Scaling);
 end
 
-function [rect_r, rect_l] = rectify_images(image_r, image_l)
+function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
     % %In Grauwertbilder konvertieren
     image_gray_r = mean(image_r,3);
     image_gray_l = mean(image_l,3);
@@ -46,7 +52,7 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l)
                                 'tau',10^6,'do_plot',false);
     features_l = harris_detektor(image_gray_l,'segment_length',15,...
                                 'k',0.04,'min_dist',50,'N',5,...
-                                'tau',10^6,'do_plot',false);
+                                'tau',10^5,'do_plot',false);
    
     %Korrespondenzschaetzung
     correspondence = punkt_korrespondenzen(image_gray_r,image_gray_l,...
@@ -61,12 +67,12 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l)
     F = achtpunktalgorithmus(correspondence_stable);
   
     % Try to compute rectifycation images
-    [rect_r, rect_l] = Rectify_copied( image_r, image_l, F);
+    [rect_r, rect_l] = Rectify_copied( image_r, image_l, F, do_plot);
       
     if isempty( rect_r ) || isempty( rect_l )
         % I doen't work load matlab F matrix
-        load 'F_matlab.mat' 'F';
-        [rect_r, rect_l] = Rectify_copied( image_r, image_l, F);
+        %load 'F_matlab.mat' 'F';
+        [rect_r, rect_l] = Rectify_copied( image_r, image_l,'do_plot',do_plot);
     end
     if isempty( rect_r ) || isempty( rect_l )
         disp('Cant compute Rectificate images ');
@@ -79,14 +85,7 @@ function[disp_map_r, disp_map_l] = Disparity_color_by_blocks( ...
     disp_map_l = stereoDisparity_color(image_l, image_r, halfBolcksize, disparityRange, false);
     fprintf('Berechnung der rechten Disparity Map');
     disp_map_r = stereoDisparity_color(image_r, image_l, halfBolcksize, disparityRange, false);
-
-    %wide = abs(disparityRange(1));
-    %height = size(disp_map_l,1);
-    
-    % back to original size
-    %disp_map_l = [zeros(height, wide), disp_map_l, zeros(height, wide)];
-    %disp_map_r = [zeros(height, wide), disp_map_r, zeros(height, wide)];
-   
+  
 end
 
 function [disp_map_r, disp_map_l] = Disparity_color_total_image(...

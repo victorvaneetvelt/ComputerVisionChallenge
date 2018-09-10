@@ -1,10 +1,12 @@
 %% This function is copied by a Toolbox from
 
-function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F )
+function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
             %im1 = imread('img/L2.JPG');
             %im2 = imread('img/R2.JPG');
    
-            
+            if exist('F','var')   
+                [F, in1, in2] = extractF_2( im1, im2 );
+            end
             %% Compute Epipole
             % calculate epipoles
             % of image 1 due to camera center in image 2 (right nullspace)
@@ -13,10 +15,14 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F )
             % of image 2 due to camera center in image 1 (left nullspace)
             eP2 = null(F');
             eP2 = eP2./eP2(3);
+            %% Compute Epiline
+            
+
+            
             
             %% find initial rectification matrices
             H1 = [   1              0       0;...
-                    eP1(2)/eP1(1)   1       0;...
+                    -eP1(2)/eP1(1)  1       0;...
                     -1/eP1(1)       0       1];
             
             A = [   -1             0            0       0            0            0;...
@@ -25,9 +31,9 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F )
                     0              0            0       1            0            0;...
                     0              0            0       0            1            0;...
                     0              0            0       0            0            1;...
-                    H1(3,1)        0            0       H1(2,1)      0            0;...
-                    0              H1(3,1)      0       0            H1(2,1)      0;...
-                    0              0           H1(3,1)  0             0           H1(2,1)];
+                    -H1(3,1)        0            0       H1(2,1)      0            0;...
+                    0              -H1(3,1)      0       0            H1(2,1)      0;...
+                    0              0           -H1(3,1)  0             0           H1(2,1)];
              
             b = [   F(1,3);...
                     F(2,3);...
@@ -58,11 +64,24 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F )
                     r c 1];
             H2 = minimizeDistortion( H2, pts, 0 );
             [rectIm1, rectIm2] = rectifyImages( im1, im2, H1, H2 );
-            %figure;
-            %imshow(rectIm1);
-            %figure;
-            %imshow(rectIm2);
             
+            % transform inliers
+            %{
+            in1 = [in1'; ones( 1,length(in1)) ];  
+            in2 = [in2'; ones( 1,length(in2)) ]; 
+            in1 = (H1*in1)';
+            in1 = in1./repmat( in1(:,3), 1,3);
+            in2 = (H2*in2)';
+            in2 = in2./repmat( in2(:,3), 1,3);
+            %}  
+            if do_plot
+                figure;
+                imshow(rectIm1);
+                title(' rect Image 1' );
+                figure;
+                imshow(rectIm2);
+                title(' rect Image 2' );
+            end
 end
 
 function K = minimizeDistortion( H, pts, a3 )

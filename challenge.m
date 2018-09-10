@@ -26,7 +26,7 @@ load('K2.mat');
 
 %% Definieren des Scaling Faktors
 %Scaling=0.3;
-Scaling=0.5;
+Scaling=0.1;
 %% Define the size of the blocks for block matching.
 halfBolcksize=4; %gerade Zahl wählen!!
 % The disparity range defines how many pixels away from the block's location
