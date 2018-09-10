@@ -1,12 +1,12 @@
 function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRange, do_plot)
     tic;
     %% Remove this for normal include
-    load('img/rect_im_L2.mat');
-    load('img/rect_im_R2.mat');
+    %load('img/rect_im_L2.mat');
+    %load('img/rect_im_R2.mat');
     
-    left = Rectification_image1;
-    right = Rectification_image2;
-    clearvars Rectification_image1 Rectification_image2
+    %left = Rectification_image1;
+    %right = Rectification_image2;
+    %clearvars Rectification_image1 Rectification_image2
 
     %% Add Top and Bottom Border to right Image
     right = [zeros(halfBlockSize,size(right,2),3); 
@@ -16,15 +16,21 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     [r_Height, r_Wide, r_deep] = size(right);
 
     %% Calculate Left image sizes
-    [~,  l_Wide, ~] = size(left);
+    %[~,  l_Wide, ~] = size(left);
     
-    left_index = 1+ abs(disparityRange(1)); % move to left
-    right_index =l_Wide - abs(disparityRange(2)); % move to right
+    %left_index = 1+ abs(disparityRange(1)); % move to left
+    %right_index =l_Wide - abs(disparityRange(2)); % move to right
     displacement_range = -1* disparityRange(1) + disparityRange(2)+1;
-    total_size = l_Wide - (abs(disparityRange(1))+  abs(disparityRange(2)));    
+    %total_size = l_Wide - (abs(disparityRange(1))+  abs(disparityRange(2)));    
+    left = [zeros(halfBlockSize,size(left,2),3); 
+            left;
+            zeros(halfBlockSize,size(left,2),3)]; %% Top and Bottom
+    %{
+    % cut disparity range out
     left = [zeros(halfBlockSize,total_size,3); 
             left(:,left_index: right_index,:);
             zeros(halfBlockSize,total_size,3)]; %% Top and Bottom
+    %}
     left = single(left);
     [l_Height,  l_Wide, l_deep] = size(left);
      
@@ -57,8 +63,7 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
     
     %% Calculate dispmap
     for y = 1:1:col_limit % iterate over all col
-        %% Set right line
-        %right_line = build_right_line(right,y, r_Wide, blockSize);
+        %% Convert one line from the right image into a vector block
         for x = 1 : 1: r_wide_limit
             block = right(y:y+blockSize-1, x:x+blockSize-1,:);
             block = permute(block, [3 1 2]);
@@ -67,15 +72,35 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
          end
         %% Set left line
         for x = 1 : 1: l_wid_limit
+            % index in right line
+            start_index = x + disparityRange(1);
+            end_index = start_index + displacement_range;
+            % check limits
+            start_limted_index = max(1,start_index);
+            end_limited_index = min(r_Wide, end_index);
+            
+            right_frame = right_line(start_limted_index:end_limited_index,:,:);
+            right_frame_size = size(right_frame,1);
+            index_shift =  start_limted_index - start_index;
+          
+            
+            
             left_block = permute(left(y:y+blockSize-1, x:x+blockSize-1,:), [3 1 2]);
+            % convert Block-Matrix into vector
             left_vector = left_block(:,:);
+            
+            % weight Block for NCC
             left_vector = weightedMask_tree_color.* left_vector;
-            left_frame =repmat(left_vector(),[1,1,displacement_range]);
+            
+            % 
+            left_frame =repmat(left_vector(),[1,1,right_frame_size]);
             left_frame = permute(left_frame, [3 1 2]); % dim: displacement color block
-            right_frame = right_line(x:x+displacement_range-1,:,:);
+            % construct a right line with big values
+               
+            %right_frame = right_line(x:x+displacement_range-1,:,:);
             SAP = sum(sum(abs(left_frame - right_frame),2),3);
             [~, NCC_max_index] = min(SAP(:),[],1);
-             
+            NCC_max_index = NCC_max_index + index_shift + disparityRange(1) -1;; %displacement 
             
             if NCC_max_index > 1 && NCC_max_index+1<size(SAP,1)
                 C1 = SAP(NCC_max_index-1);
@@ -84,7 +109,7 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
                 NCC_max_index = NCC_max_index - (0.5 * (C3 - C1) / (C1 - (2*C2) + C3));
             end
             
-            DispMap(y,x) = NCC_max_index + disparityRange(1) -1;
+            DispMap(y,x) = NCC_max_index;
         end
         if (mod(y, 10) == 0)
             elapsed_time = toc;
@@ -92,14 +117,16 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
             fprintf(' time %.2f min.\n', elapsed_time / 60.0);
         end
     end
-    save('DispMap_with_color_400_1.mat', 'DispMap', 'blockSize', 'disparityRange');
-
-    figure;
-    imshow(DispMap, disparityRange);
-    title('Disparity MapML');
-    colormap(gca,jet) 
-    colorbar
     
+    %save('DispMap_with_color_400_1.mat', 'DispMap', 'blockSize', 'disparityRange');
+
+    if do_plot 
+        figure;
+        imshow(DispMap, disparityRange);
+        title('Disparity MapML');
+        colormap(gca,jet) 
+        colorbar
+    end
     
     elapsed_time = toc
     fprintf('Calculating disparity map took %.2f min.\n', elapsed_time / 60.0);
