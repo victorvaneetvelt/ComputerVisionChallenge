@@ -69,7 +69,7 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
                                             'min_corr',0.91,...
                                             'do_plot',false);
     %Find stable correspondence pair with the RANSAC-Algorithm
-    correspondence_stable = F_ransac(correspondence, 'tolerance', 0.001);
+    correspondence_stable = F_ransac(correspondence, 'tolerance', 0.0005);
 
     % compute Fundamental matrix
     F = achtpunktalgorithmus(correspondence_stable);
@@ -143,10 +143,10 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
        case 'original'
             disparity_dist = abs(disparityRange(1));
             if do_print; fprintf('Compute the left Disparity Map');end
-            disp_map_l=stereoDisparityoriginal(image_l_scaled, image_r_scaled, ...
+            disp_map_l=stereoDisparityoriginal(image_r_scaled, image_l_scaled, ...
                                     halfBolcksize, disparity_dist, false);
             if do_print; fprintf('Compute the right Disparity Map');end
-            disp_map_r=stereoDisparityoriginal(image_r_scaled, image_l_scaled, ...
+            disp_map_r=stereoDisparityoriginal(image_l_scaled, image_r_scaled, ...
                                     halfBolcksize, disparity_dist ,false);
  
        otherwise
