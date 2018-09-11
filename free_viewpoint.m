@@ -159,8 +159,8 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    end
    
    %% Scale the disparity maps up to the original size
-    disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)]);
-    disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)]);
+    disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)],'bilinear');
+    disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)],'bilinear');
     disp_map_r=disp_map_r./Scaling;
     disp_map_l=disp_map_l./Scaling;
 end

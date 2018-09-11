@@ -7,8 +7,8 @@ Reconstruction2=zeros(size(right),'uint8');
 % Sortieren aller Verschiebungen der DispMap damit, wenn 2 oder mehr 
 % Bildpunkte im FreeViewPointBild auf den selben Pixel projiziert werden, 
 % der Pixel des weiter vorne liegenden Gegenstandes dargestellt wird.
-[~, SortedIndexDispMapLeft]=sort(DispMapLeft(:));
-[~, SortedIndexDispMapRight]=sort(DispMapRight(:),'descend');
+[~, SortedIndexDispMapLeft]=sort(DispMapLeft(:),'descend');
+[~, SortedIndexDispMapRight]=sort(DispMapRight(:));
 if p<0.5
     SortedIndexDispMap1=SortedIndexDispMapLeft;
     image1=left;
@@ -30,7 +30,7 @@ else
 end
 % Schleife über alle Pixel des Bildes
 for i=1:1:size(image1,1)*size(image1,2)
-    
+
     % ermitteln der x und y Koordinate des Pixels
     [y,x]=ind2sub(size(DispMap1),SortedIndexDispMap1(i));
     
