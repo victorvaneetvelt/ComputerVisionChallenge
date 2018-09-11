@@ -25,4 +25,7 @@ octave-workspace
 # Simulink autosave extension
 .autosave
 
+# Fucking annoying thumbs
+*.db
+
 # End of https://www.gitignore.io/api/matlab
