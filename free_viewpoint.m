@@ -5,8 +5,6 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
     %% Validate Inputs
     parser =inputParser;
     %TODO: max disparityRange
-    addOptional(parser,'scaling', 1,@(n)validateattributes(n, ...
-                                  {'numeric'},{'scalar','<=',1,'>=',0.1}));
     addOptional(parser,'displacement',1,@(n)validateattributes(n, ...
                                   {'numeric'},{'<=',1,'>=',0.1}));                            
     % ignore disparity variables they will be checked later
@@ -17,7 +15,6 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
     parse(parser, varargin{:});
     
     do_print = parser.Results.do_print;
-    Scaling = parser.Results.scaling;
     p = parser.Results.displacement;
     dispmat_var = parser.Results.disparity_var;
     
@@ -36,22 +33,14 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
     
     end
     
-    
-    %% Scale down image for computation performance
-    rect_r = imresize(rect_r, Scaling);
-    rect_l = imresize(rect_l, Scaling);
-    image_r = imresize(image_r, Scaling);
-    image_l = imresize(image_l, Scaling);
   
     %% Compute Disparitymaps
     [disp_map_r, disp_map_l] = DisparityMap(rect_r, rect_l, ... 
                                     dispmat_var{:},'do_print', do_print);
-    
+
     %% Berechnung des Zwischenbildes
     output_image = reconstruction(disp_map_r,disp_map_l, ...
                                    rect_r,rect_l,image_r, image_l, p);
-    % Scale image to original size
-    output_image=imresize(output_image,1/Scaling);
 end
 
 function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
@@ -103,6 +92,8 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
                                  {'numeric'},{'scalar','<=',8,'>=',0}));                          
    addOptional(parser,'dispMap_typ', @(n)validateattributes(n, ...
                                  {'char'}, {'scalar'}) );
+   addOptional(parser,'scaling', 1,@(n)validateattributes(n, ...
+                                  {'numeric'},{'scalar','<=',1,'>=',0.1}));
    addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
                                    {'logical'}, {'scalar'}) );
  
@@ -111,28 +102,34 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    halfBolcksize = parser.Results.halfBolcksize;
    disparityRange = parser.Results.disparityRange;
    typ = parser.Results.dispMap_typ;
+   Scaling = parser.Results.scaling;
    do_print = parser.Results.do_print;
                              
+   %% Perform Scaling for computation performance
+   image_r_scaled = imresize(image_r, Scaling);
+   image_l_scaled = imresize(image_l, Scaling);
+   disparityRange=disparityRange.*Scaling;
+   
    %% Compute left and right disparity Map
    addpath('disparityMap/');
    switch typ
         case 'colorBlocks'
             if do_print; fprintf('Compute the left Disparity Map');end
             
-            disp_map_l = stereoDisparity_color(image_l, image_r, ...
+            disp_map_l = stereoDisparity_color(image_l_scaled, image_r_scaled, ...
                                     halfBolcksize, disparityRange, false);
             
             if do_print; fprintf('Compute the right Disparity Map'); end
             
-            disp_map_r = stereoDisparity_color(image_r, image_l, ...
+            disp_map_r = stereoDisparity_color(image_r_scaled, image_l_scaled, ...
                                     halfBolcksize, disparityRange, false);
        case 'fullImage'
             if do_print; fprintf('Compute the left Disparity Map');end
            
-            disp_map_l = stereoDisparity_full_image(image_l, image_r,  ...
+            disp_map_l = stereoDisparity_full_image(image_l_scaled, image_r_scaled,  ...
                                                 0, disparityRange, false);
             if do_print; fprintf('Compute the right Disparity Map');end
-            disp_map_r = stereoDisparity_full_image(image_r, image_l,  ...
+            disp_map_r = stereoDisparity_full_image(image_r_scaled, image_l_scaled,  ...
                                                 0, disparityRange, false);
           
        case 'load'
@@ -146,20 +143,24 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
        case 'original'
             disparity_dist = abs(disparityRange(1));
             if do_print; fprintf('Compute the left Disparity Map');end
-            disp_map_l=stereoDisparityoriginal(image_l, image_r, ...
+            disp_map_l=stereoDisparityoriginal(image_l_scaled, image_r_scaled, ...
                                     halfBolcksize, disparity_dist, false);
             if do_print; fprintf('Compute the right Disparity Map');end
-            disp_map_r=stereoDisparityoriginal(image_r, image_l, ...
+            disp_map_r=stereoDisparityoriginal(image_r_scaled, image_l_scaled, ...
                                     halfBolcksize, disparity_dist ,false);
  
        otherwise
             if do_print; fprintf('Compute the left Disparity Map');end
-            disp_map_l = stereoDisparity_color(image_l, image_r, ...
+            disp_map_l = stereoDisparity_color(image_l_scaled, image_r_scaled, ...
                                     halfBolcksize, disparityRange, false);
             if do_print; fprintf('Compute the right Disparity Map');end
-            disp_map_r = stereoDisparity_color(image_r, image_l, ...
+            disp_map_r = stereoDisparity_color(image_r_scaled, image_l_scaled, ...
                                     halfBolcksize, disparityRange, false);
-    end
+   end
+   
+   %% Scale the disparity maps up to the original size
+    disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)]);
+    disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)]);
 end
 
 
