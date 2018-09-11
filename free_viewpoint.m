@@ -1,35 +1,52 @@
-function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,disparityRange, Scaling)
+function [output_image]  = free_viewpoint(image_r, image_l, varargin)
 % This function generates an image from a virtual viewpoint between two
 % real images. The output image has the same size as the input images.
 % 
-    %%Compute the rectification images
+    %% Validate Inputs
+    parser =inputParser;
+    %TODO: max disparityRange
+    addOptional(parser,'scaling', 1,@(n)validateattributes(n, ...
+                                  {'numeric'},{'scalar','<=',1,'>=',0.1}));
+    addOptional(parser,'displacement',1,@(n)validateattributes(n, ...
+                                  {'numeric'},{'<=',1,'>=',0.1}));                            
+    % ignore disparity variables they will be checked later
+    addOptional(parser,'disparity_var', true);                            
+    addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
+                                   {'logical'}, {'scalar'}) );
+    % check if in list
+    parse(parser, varargin{:});
+    
+    do_print = parser.Results.do_print;
+    Scaling = parser.Results.scaling;
+    p = parser.Results.displacement;
+    dispmat_var = parser.Results.disparity_var;
+    
+
+    %% Compute the rectification images
+    if do_print; disp('Compute rectified Images');end           
     [rect_r, rect_l] = rectify_images(image_r, image_l, false);
-    %load 'img/rect_im_L2.mat' Rectification_image1;
-    %load 'img/rect_im_R2.mat' Rectification_image2;
+ 
+    if isempty( rect_r ) || isempty( rect_l )
+        disp('Cant compute Rectificate images ');
+        %load 'img/rect_im_L2.mat' Rectification_image1;
+        %load 'img/rect_im_R2.mat' Rectification_image2;
+
+        %rect_r = Rectification_image1;
+        %rect_l = Rectification_image2;
     
-    %rect_r = Rectification_image1;
-    %rect_l = Rectification_image2;
+    end
     
-    %{
-    figure;
-    imshow(rect_l);
-    title(' rect im L2' );
-    figure;
-    imshow(rect_r);
-    title(' rect im R2' );
-    %}
+    
     %% Scale down image for computation performance
     rect_r = imresize(rect_r, Scaling);
     rect_l = imresize(rect_l, Scaling);
     image_r = imresize(image_r, Scaling);
     image_l = imresize(image_l, Scaling);
   
-    %% Compute Disparitymaps 
-    [disp_map_r, disp_map_l] = Disparity_color_by_blocks(rect_r, rect_l, halfBolcksize,[-400 400]);
+    %% Compute Disparitymaps
+    [disp_map_r, disp_map_l] = DisparityMap(rect_r, rect_l, ... 
+                                    dispmat_var{:},'do_print', do_print);
     
-    %[disp_map_r, disp_map_l] = Disparity_color_total_image(rect_r, rect_l, halfBolcksize,disparityRange);
-        
-
     %% Berechnung des Zwischenbildes
     output_image = reconstruction(disp_map_r,disp_map_l, ...
                                    rect_r,rect_l,image_r, image_l, p);
@@ -38,6 +55,8 @@ function [output_image]  = free_viewpoint(image_r, image_l, p, halfBolcksize,dis
 end
 
 function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
+    
+    addpath('rectification/');    
     % %In Grauwertbilder konvertieren
     image_gray_r = mean(image_r,3);
     image_gray_l = mean(image_l,3);
@@ -68,72 +87,92 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
   
     % Try to compute rectifycation images
     [rect_r, rect_l] = Rectify_copied( image_r, image_l, F, do_plot);
-      
-    if isempty( rect_r ) || isempty( rect_l )
-        % I doen't work load matlab F matrix
-        %load 'F_matlab.mat' 'F';
-        %[rect_r, rect_l] = Rectify_copied( image_r, image_l,'do_plot',do_plot);
+end
+
+function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
+   %% Compute the Disparity Map 
+   % DisparityMap shows the distance to the pixel with a high similarity
+   % halfblocksize define the size of the block, which will compair
+   % disparityRange is the max range in the left and right seeking direction
+
+   %% Validate Inputs 
+   parser =inputParser;
+   addOptional(parser,'disparityRange',[-400 400], ...
+                                @(n)validateattributes(n, {'numeric'},{}));
+   addOptional(parser,'halfBolcksize', 0,@(n)validateattributes(n, ...
+                                 {'numeric'},{'scalar','<=',8,'>=',0}));                          
+   addOptional(parser,'dispMap_typ', @(n)validateattributes(n, ...
+                                 {'char'}, {'scalar'}) );
+   addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
+                                   {'logical'}, {'scalar'}) );
+ 
+   parse(parser, varargin{:});
+   
+   halfBolcksize = parser.Results.halfBolcksize;
+   disparityRange = parser.Results.disparityRange;
+   typ = parser.Results.dispMap_typ;
+   do_print = parser.Results.do_print;
+                             
+   %% Compute left and right disparity Map
+   addpath('disparityMap/');
+   switch typ
+        case 'colorBlocks'
+            if do_print; fprintf('Compute the left Disparity Map');end
+            
+            disp_map_l = stereoDisparity_color(image_l, image_r, ...
+                                    halfBolcksize, disparityRange, false);
+            
+            if do_print; fprintf('Compute the right Disparity Map'); end
+            
+            disp_map_r = stereoDisparity_color(image_r, image_l, ...
+                                    halfBolcksize, disparityRange, false);
+       case 'fullImage'
+            if do_print; fprintf('Compute the left Disparity Map');end
+           
+            disp_map_l = stereoDisparity_full_image(image_l, image_r,  ...
+                                                0, disparityRange, false);
+            if do_print; fprintf('Compute the right Disparity Map');end
+            disp_map_r = stereoDisparity_full_image(image_r, image_l,  ...
+                                                0, disparityRange, false);
+          
+       case 'load'
+            if do_print; fprintf('load the left Disparity Map');end
+            load 'DispMap_rectified_Imagepair_2_left.mat' DispMap;
+            disp_map_l = DispMap;
+            if do_print; fprintf('load the left Disparity Map');end
+            load 'DispMap_rectified_Imagepair_2_right.mat' DispMap;
+            disp_map_r = DispMap;
+
+       case 'original'
+            disparity_dist = abs(disparityRange(1));
+            if do_print; fprintf('Compute the left Disparity Map');end
+            disp_map_l=stereoDisparityoriginal(image_l, image_r, ...
+                                    halfBolcksize, disparity_dist, false);
+            if do_print; fprintf('Compute the right Disparity Map');end
+            disp_map_r=stereoDisparityoriginal(image_r, image_l, ...
+                                    halfBolcksize, disparity_dist ,false);
+ 
+       otherwise
+            if do_print; fprintf('Compute the left Disparity Map');end
+            disp_map_l = stereoDisparity_color(image_l, image_r, ...
+                                    halfBolcksize, disparityRange, false);
+            if do_print; fprintf('Compute the right Disparity Map');end
+            disp_map_r = stereoDisparity_color(image_r, image_l, ...
+                                    halfBolcksize, disparityRange, false);
     end
-    if isempty( rect_r ) || isempty( rect_l )
-        disp('Cant compute Rectificate images ');
-    end
 end
 
-function[disp_map_r, disp_map_l] = Disparity_color_by_blocks( ...
-                        image_r, image_l, halfBolcksize,disparityRange)
-    fprintf('Compute the left Disparity Map');
-    disp_map_l = stereoDisparity_color(image_l, image_r, halfBolcksize, disparityRange, false);
-    fprintf('Berechnung der rechten Disparity Map');
-    disp_map_r = stereoDisparity_color(image_r, image_l, halfBolcksize, disparityRange, false);
-  
-end
 
-function [disp_map_r, disp_map_l] = Disparity_color_total_image(...
-                        image_r, image_l, halfBolcksize,disparityRange)
-    %tic();
-    % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
-    % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-    fprintf('Compute the left Disparity Map');
-    %das Ergebnis liefert eine DisparityMap des linken Bildes
-    %% load DispMap
-    %load('DispMap_rectified_Imagepair_2_left.mat');
-    %DispMapLeft=DispMap;
-    
-    %% compute old DispMap
-    %DispMapLeft=stereoDisparityoriginal(image_l, image_r, halfBolcksize, disparityRange ,false);
-    
-    %% compute new DispMap
-    disp_map_l = DispMap_color_blocks_2(image_l, image_r, 0, [-400 400], false);
-    
-    
-    %save('DispMap_rectified_Imagepair_2_left_skaling0,75.mat', 'DispMap') 
-    fprintf('Berechnung der rechten Disparity Map');
-    %das Ergebnis liefert eine DisparityMap des rechten Bildes
-    
-    %% load DispMap
-    %load('DispMap_rectified_Imagepair_2_right.mat');
-    %DispMapRight=DispMap;
-  
-    %% compute old DispMap
-    %DispMapRight=stereoDisparityoriginal(image1, image2, halfBolcksize, disparityRange ,false);
-    %save('DispMap_rectified_Imagepair_2_right_skaling0,75.mat', 'DispMap')
-    
-    %% compute new DispMap
-    disp_map_r = DispMap_color_blocks_2(image_r, image_l, 0, [-400 400], false);
 
-    % Display compute time.
-    %elapsed = toc();
-    %fprintf('Calculating disparity map took %.2f min.\n', elapsed / 60.0);
-
-end
 
 function output_image=reconstruction(disp_map_r,disp_map_l,rect_r,rect_l,image_r, image_l, p)
+    addpath('reconstruction/');
     % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
     % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-    fprintf('Rekonstruktion wird berechnet');
+    fprintf('Rekonstruktion wird berechnet\n');
     %Das Ergebnis beinhaltet das FreeViewPointBild 
     output_image = Reconstruction3D(disp_map_l,disp_map_r,rect_l,rect_r,p);
-    fprintf('Postprocessing wird ausgeführt');
+    fprintf('Postprocessing wird ausgeführt\n');
     if p<0.5
         output_image=postprocessing(output_image,image_l);
     else
