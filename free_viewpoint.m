@@ -4,78 +4,119 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
 % 
     %% Validate Inputs
     parser =inputParser;
-    %TODO: max disparityRange
-    addOptional(parser,'displacement',1,@(n)validateattributes(n, ...
-                                  {'numeric'},{'<=',1,'>=',0.1}));                            
-    % ignore disparity variables they will be checked later
-    addOptional(parser,'disparity_var', true);                            
+    
     addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
                                    {'logical'}, {'scalar'}) );
-    % check if in list
+    %addOptional(parser,'displacement', 0.5);
+    addOptional(parser,'displacement',1,@(n)validateattributes(n, ...
+                                  {'numeric'},{'<=',1,'>=',0.1}));                            
+    
+    % if default else take given
+    addOptional(parser,'disparity_var', {});
+    
+    % if default else take given
+    addOptional(parser,'rectifiy_var', {}); 
+    
+    % if not set set on empty else take given
+    addOptional(parser,'gui_text_box', ...
+        matlab.ui.control.TextArea.empty);                
     parse(parser, varargin{:});
     
     do_print = parser.Results.do_print;
     p = parser.Results.displacement;
     dispmat_var = parser.Results.disparity_var;
+    rectifiy_var = parser.Results.rectifiy_var;
     
+    %% Check is their a text box for prints
+    is_text_box = ~isempty(parser.Results.gui_text_box);
+    text_box = parser.Results.gui_text_box;
+
 
     %% Compute the rectification images
-    if do_print; disp('Compute rectified Images');end           
-    [rect_r, rect_l] = rectify_images(image_r, image_l, false);
+    msg = 'Compute rectified Images';
+    if do_print; disp(msg);end
+    if is_text_box; text_box.Value(1) = {msg}; end 
+    [rect_r, rect_l] = rectify_images(image_r, image_l, rectifiy_var{:});
  
     if isempty( rect_r ) || isempty( rect_l )
         disp('Cant compute Rectificate images ');
-        %load 'img/rect_im_L2.mat' Rectification_image1;
-        %load 'img/rect_im_R2.mat' Rectification_image2;
-
-        %rect_r = Rectification_image1;
-        %rect_l = Rectification_image2;
-    
+        return;
     end
     
   
     %% Compute Disparitymaps
     [disp_map_r, disp_map_l] = DisparityMap(rect_r, rect_l, ... 
-                                    dispmat_var{:},'do_print', do_print);
+                                    dispmat_var{:}, ...
+                                    'do_print', do_print, ...
+                                    'gui_text_box', text_box ...
+                                    );
 
     %% Berechnung des Zwischenbildes
+    msg = 'reconstruct image';
+    if do_print; disp(msg);end
+    if is_text_box; text_box.Value = {msg, ''}; end 
+    
+    
     output_image = reconstruction(disp_map_r,disp_map_l, ...
                                    rect_r,rect_l,image_r, image_l, p);
 end
 
-function [rect_r, rect_l] = rectify_images(image_r, image_l, do_plot)
+function [rect_r, rect_l] = rectify_images(image_r, image_l, varargin)
+    %% Validate Inputs
+    parser =inputParser;
+    % if default else take given
+    addOptional(parser,'harris_var', {}); 
+    % if default else take given
+    addOptional(parser,'correspondence_var', {}); 
+    % if default else take given
+    addOptional(parser,'ramsac_var', {}); 
+    % if not set set on empty else take given
+    addOptional(parser,'gui_text_box', ...
+        matlab.ui.control.TextArea.empty);                
+    parse(parser, varargin{:});
     
+    harris_var = parser.Results.harris_var;
+    correspondence_var = parser.Results.correspondence_var;
+    ramsac_var = parser.Results.ramsac_var;
+
     addpath('rectification/');    
-    % %In Grauwertbilder konvertieren
+    
+    
+    %% In Grauwertbilder konvertieren
     image_gray_r = mean(image_r,3);
     image_gray_l = mean(image_l,3);
 
-    % Gausfiltern
+    %% Gausfiltern
     image_gray_r = imgaussfilt( image_gray_r, 1 );
     image_gray_l = imgaussfilt( image_gray_l, 1 );
  
     % compute Harris-features
-    features_r = harris_detektor(image_gray_r,'segment_length',15,...
-                                'k',0.04,'min_dist',50,'N',5,...
-                                'tau',10^6,'do_plot',false);
-    features_l = harris_detektor(image_gray_l,'segment_length',15,...
-                                'k',0.04,'min_dist',50,'N',5,...
-                                'tau',10^5,'do_plot',false);
+    features_r = harris_detektor(image_gray_r,harris_var{:});
+    features_l = harris_detektor(image_gray_l,harris_var{:});
+    %features_r = harris_detektor(image_gray_r,'segment_length',15,...
+    %                            'k',0.04,'min_dist',50,'N',5,...
+    %                            'tau',10^6,'do_plot',false);
+    %features_l = harris_detektor(image_gray_l,'segment_length',15,...
+    %                            'k',0.04,'min_dist',50,'N',5,...
+    %                            'tau',10^5,'do_plot',false);
    
     %Korrespondenzschaetzung
     correspondence = punkt_korrespondenzen(image_gray_r,image_gray_l,...
                                             features_r,features_l, ...
-                                            'window_length',25, ...
-                                            'min_corr',0.91,...
-                                            'do_plot',false);
+                                            correspondence_var{:});
+    %correspondence = punkt_korrespondenzen(image_gray_r,image_gray_l,...
+    %                                        features_r,features_l, ...
+    %                                        'window_length',25, ...
+    %                                        'min_corr',0.91,...
+    %                                        'do_plot',false);
     %Find stable correspondence pair with the RANSAC-Algorithm
-    correspondence_stable = F_ransac(correspondence, 'tolerance', 0.001);
+    correspondence_stable = F_ransac(correspondence, ramsac_var{:});
 
     % compute Fundamental matrix
     F = achtpunktalgorithmus(correspondence_stable);
   
     % Try to compute rectifycation images
-    [rect_r, rect_l] = Rectify_copied( image_r, image_l, F, do_plot);
+    [rect_r, rect_l] = Rectify_copied( image_r, image_l, F, false);
 end
 
 function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
@@ -96,9 +137,15 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
                                   {'numeric'},{'scalar','<=',1,'>=',0.1}));
    addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
                                    {'logical'}, {'scalar'}) );
- 
-   parse(parser, varargin{:});
    
+                               
+   addOptional(parser,'gui_text_box', matlab.ui.control.TextArea.empty); 
+
+   parse(parser, varargin{:});
+   is_text_box = ~isempty(parser.Results.gui_text_box);
+   if is_text_box
+        text_box = parser.Results.gui_text_box;
+   end
    halfBolcksize = parser.Results.halfBolcksize;
    disparityRange = parser.Results.disparityRange;
    typ = parser.Results.dispMap_typ;
@@ -114,15 +161,18 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    addpath('disparityMap/');
    switch typ
         case 'colorBlocks'
-            if do_print; fprintf('Compute the left Disparity Map');end
+            
+            msg = 'Compute the left Disparity Map';
+            if is_text_box; text_box.Value = {msg, ''}; end 
+            if do_print; disp(msg);end
             
             disp_map_l = stereoDisparity_color(image_l_scaled, image_r_scaled, ...
-                                    halfBolcksize, disparityRange, false);
-            
-            if do_print; fprintf('Compute the right Disparity Map'); end
-            
+                                                varargin{:});
+            msg = 'Compute the right Disparity Map';
+            if is_text_box; text_box.Value = {msg, ''}; end 
+            if do_print; disp(msg);end
             disp_map_r = stereoDisparity_color(image_r_scaled, image_l_scaled, ...
-                                    halfBolcksize, disparityRange, false);
+                                                varargin{:});
        case 'fullImage'
             if do_print; fprintf('Compute the left Disparity Map');end
            
@@ -159,8 +209,11 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    end
    
    %% Scale the disparity maps up to the original size
-    disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)]);
-    disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)]);
+   disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)],'bilinear');
+   disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)],'bilinear');
+   disp_map_r=disp_map_r./Scaling;
+   disp_map_l=disp_map_l./Scaling;
+
 end
 
 
@@ -170,10 +223,10 @@ function output_image=reconstruction(disp_map_r,disp_map_l,rect_r,rect_l,image_r
     addpath('reconstruction/');
     % Um ein besseres FreeViewPointBild zu berechnen wird anhand der relativen
     % Verschiebung entschieden ob die Berechnung rechtsseitg oder linksseitig erfolgen soll 
-    fprintf('Rekonstruktion wird berechnet\n');
+    %fprintf('Rekonstruktion wird berechnet\n');
     %Das Ergebnis beinhaltet das FreeViewPointBild 
     output_image = Reconstruction3D(disp_map_l,disp_map_r,rect_l,rect_r,p);
-    fprintf('Postprocessing wird ausgeführt\n');
+    %fprintf('Postprocessing wird ausgeführt\n');
     if p<0.5
         output_image=postprocessing(output_image,image_l);
     else

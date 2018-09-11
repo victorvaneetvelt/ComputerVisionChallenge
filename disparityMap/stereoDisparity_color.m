@@ -1,13 +1,29 @@
-function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRange, do_plot)
-    tic;
-    %% Remove this for normal include
-    %load('img/rect_im_L2.mat');
-    %load('img/rect_im_R2.mat');
-    
-    %left = Rectification_image1;
-    %right = Rectification_image2;
-    %clearvars Rectification_image1 Rectification_image2
-
+function DispMap = stereoDisparity_color(left, right, varargin)
+    parser =inputParser;
+    addOptional(parser,'disparityRange',[-400 400], ...
+                                @(n)validateattributes(n, {'numeric'},{}));
+    addOptional(parser,'halfBolcksize', 0,@(n)validateattributes(n, ...
+                                 {'numeric'},{'scalar','<=',8,'>=',0}));                          
+    addOptional(parser,'dispMap_typ', @(n)validateattributes(n, ...
+                                 {'char'}, {'scalar'}) );
+    addOptional(parser,'scaling', 1,@(n)validateattributes(n, ...
+                                  {'numeric'},{'scalar','<=',1,'>=',0.1}));
+    addOptional(parser,'do_print',false,@(n)validateattributes(n, ...
+                                                {'logical'}, {'scalar'}) );
+   
+                        
+    addOptional(parser,'gui_text_box', matlab.ui.control.TextArea.empty); 
+    parse(parser, varargin{:});
+    is_text_box = ~isempty(parser.Results.gui_text_box);
+    if is_text_box
+        text_box = parser.Results.gui_text_box;
+    end
+    halfBlockSize = parser.Results.halfBolcksize;
+    disparityRange = parser.Results.disparityRange;
+    do_print = parser.Results.do_print;
+   
+    start_time = toc;
+   
     %% Add Top and Bottom Border to right Image
     right = [zeros(halfBlockSize,size(right,2),3); 
             right;
@@ -112,22 +128,36 @@ function DispMap = stereoDisparity_color(left, right, halfBlockSize, disparityRa
             DispMap(y,x) = NCC_max_index;
         end
         if (mod(y, 10) == 0)
-            elapsed_time = toc;
-            fprintf('  Image row %d / %d (%.0f%%)', y, col_limit, (y / col_limit) * 100);
-            fprintf(' time %.2f min.\n', elapsed_time / 60.0);
+            delta_time = toc - start_time;
+            proc = (y / col_limit) * 100;
+            if is_text_box
+                msg = strcat('DispMap (',num2str(proc,'%03.2f'),'%)'); 
+                text_box.Value(2) = {msg};
+            end 
+            
+            if do_print; 
+            fprintf('  Image row %d / %d (%.0f%%)', y, col_limit, proc);
+            fprintf(' time %.2f min.\n', delta_time / 60.0);
+            end
+            
+            
+
         end
     end
     
     %save('DispMap_with_color_400_1.mat', 'DispMap', 'blockSize', 'disparityRange');
 
-    if do_plot 
-        figure;
-        imshow(DispMap, disparityRange);
-        title('Disparity MapML');
-        colormap(gca,jet) 
-        colorbar
-    end
+    %if do_plot 
+    %    figure;
+    %    imshow(DispMap, disparityRange);
+    %    title('Disparity MapML');
+    %    colormap(gca,jet) 
+    %    colorbar
+    %end
     
-    elapsed_time = toc
-    fprintf('Calculating disparity map took %.2f min.\n', elapsed_time / 60.0);
+    end_time = (toc - start_time)/60;
+    msg = strcat('Finished after ',num2str(end_time,'%4.2f'),'min');
+    if is_text_box; text_box.Value(2) = {msg}; end 
+    if do_print; disp(msg);end
+    
 end
