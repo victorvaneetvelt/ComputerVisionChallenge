@@ -173,16 +173,26 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2 )
          return;
     end
     
-    xLim = [ xmin-0.5,xmax+0.5 ];
-    yLim = [ ymin-0.5,ymax+0.5 ];
-    
-    tform1 = projective2d( H1' );%% Computer Vision Toolbox function imwarp
-    tform2 = projective2d( H2' );%% Computer Vision Toolbox function imwarp
-    
-    outputView = imref2d([height-1, width-1], xLim, yLim);
+%     xLim = [ xmin-0.5,xmax+0.5 ];
+%     yLim = [ ymin-0.5,ymax+0.5 ];
+%     
+%     tform1 = projective2d( H1' );%% Computer Vision Toolbox function imwarp
+%     tform2 = projective2d( H2' );%% Computer Vision Toolbox function imwarp
+%     
+%     outputView = imref2d([height-1, width-1], xLim, yLim);
+%      
+%     im1 = imwarp(I1, tform1, 'OutputView', outputView ); %% Computer Vision Toolbox function imwarp
+%     im2 = imwarp(I2, tform2, 'Outputview', outputView );
      
-    im1 = imwarp(I1, tform1, 'OutputView', outputView ); %% Computer Vision Toolbox function imwarp
-    im2 = imwarp(I2, tform2, 'Outputview', outputView );
+     %Image Warping
+     im1 = imagewarp(I1, H1);     
+     im2 = imagewarp(I2, H2);
+    % Bring both Images to the same size and delete the black frame
+     im1=im1(ymin:ymax,xmin:xmax,:);
+     im2=im2(ymin:ymax,xmin:xmax,:);
+
+
+
 end
 
 function corners = transformCorners( H,r,c )
