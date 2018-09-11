@@ -52,7 +52,7 @@ p=0.3;
                                 ,'do_plot',false
                                 };
     
-    ramsac_var =                {'tolerance', 0.001};
+    ramsac_var =                {'tolerance', 0.0005};
     
     rectifiy_var =              {'harris_var', harris_var ...
                                 ,'correspondence_var', correspondence_var...

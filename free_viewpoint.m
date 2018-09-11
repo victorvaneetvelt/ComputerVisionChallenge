@@ -193,10 +193,10 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
        case 'original'
             disparity_dist = abs(disparityRange(1));
             if do_print; fprintf('Compute the left Disparity Map');end
-            disp_map_l=stereoDisparityoriginal(image_l_scaled, image_r_scaled, ...
+            disp_map_l=stereoDisparityoriginal(image_r_scaled, image_l_scaled, ...
                                     halfBolcksize, disparity_dist, false);
             if do_print; fprintf('Compute the right Disparity Map');end
-            disp_map_r=stereoDisparityoriginal(image_r_scaled, image_l_scaled, ...
+            disp_map_r=stereoDisparityoriginal(image_l_scaled, image_r_scaled, ...
                                     halfBolcksize, disparity_dist ,false);
  
        otherwise
@@ -209,11 +209,11 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    end
    
    %% Scale the disparity maps up to the original size
-   disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)],'bilinear');
-   disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)],'bilinear');
-   disp_map_r=disp_map_r./Scaling;
-   disp_map_l=disp_map_l./Scaling;
 
+    disp_map_r = imresize(disp_map_r,[size(image_r,1), size(image_r,2)],'bilinear');
+    disp_map_l = imresize(disp_map_l,[size(image_l,1), size(image_l,2)],'bilinear');
+    disp_map_r=disp_map_r./Scaling;
+    disp_map_l=disp_map_l./Scaling;
 end
 
 
