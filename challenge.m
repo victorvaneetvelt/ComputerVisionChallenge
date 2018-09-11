@@ -19,9 +19,9 @@ Image_R = imread('img/R2.JPG');
 
 %% Definieren des Scaling Faktors
 %Scaling=0.3;
-Scaling=1;
+Scaling=0.1;
 %% Define the size of the blocks for block matching.
-halfBolcksize=2;
+halfBolcksize=1;
 
 
 %% Definieren der Disparity range
@@ -70,7 +70,7 @@ p=0.3;
                                 ,'disparity_var', disparity_var ...
                                 ,'rectifiy_var', rectifiy_var...
                                 };
-                          
+    save 'parameter/default.m' all_var;                      
     output_image = free_viewpoint(Image_R, Image_L, all_var{:});
 %catch inputError
 %    disp(strcat('ERROR: ', inputError.message))
