@@ -48,6 +48,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
     
   
     %% Compute Disparitymaps
+    addpath('disparityMap/');
     [disp_map_r, disp_map_l] = DisparityMap(rect_r, rect_l, ... 
                                     dispmat_var{:}, ...
                                     'do_print', do_print, ...
@@ -64,7 +65,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
                                    rect_r,rect_l,image_r, image_l, p);
 end
 
-
+%{
 function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    %% Compute the Disparity Map 
    % DisparityMap shows the distance to the pixel with a high similarity
@@ -161,7 +162,7 @@ function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
     disp_map_r=disp_map_r./Scaling;
     disp_map_l=disp_map_l./Scaling;
 end
-
+%}
 
 
 
