@@ -164,24 +164,9 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2)
     hCond = mean([r1 r2])*0.1;
     
     if width<wCond || height<hCond% new images will be <10% of originals
-         %disp(strcat('Bad rectification',num2str(width),'<',num2str(wCond), ...
-         %                   ' or ',num2str(height),'<',num2str(hCond)));
-         %im1 = [];
-         %im2 = [];
-         error('recified images will be <10% of originals');
+        error('recified images will be <10% of originals');
 
     end
-    
-%     xLim = [ xmin-0.5,xmax+0.5 ];
-%     yLim = [ ymin-0.5,ymax+0.5 ];
-%     
-%     tform1 = projective2d( H1' );%% Computer Vision Toolbox function imwarp
-%     tform2 = projective2d( H2' );%% Computer Vision Toolbox function imwarp
-%     
-%     outputView = imref2d([height-1, width-1], xLim, yLim);
-%      
-%     im1 = imwarp(I1, tform1, 'OutputView', outputView ); %% Computer Vision Toolbox function imwarp
-%     im2 = imwarp(I2, tform2, 'Outputview', outputView );
      
      %Image Warping
      im1 = imagewarp(I1, H1);     
