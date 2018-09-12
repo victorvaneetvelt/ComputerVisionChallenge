@@ -11,8 +11,8 @@ function [rect_r, rect_l] = rectify_images(image_r, image_l, varargin)
     while isempty(rect_r) || isempty(rect_l)
         tries = tries+1;
         disp('compute F');
-        %F = extract_F(image_r, image_l, varargin{:});
-        F = extractF_with_CV_tool_box(image_r, image_l);
+        F = extract_F(image_r, image_l, varargin{:});
+        %F = extractF_with_CV_tool_box(image_r, image_l);
         disp(strcat('Rectify images try: ',num2str(tries,'%d'), ' with tolerance: ',num2str(tol,'%f')));
         [rect_r, rect_l] = Rectify_copied( image_r, image_l, F,tol, false);
         tol = tol + 0.1;
