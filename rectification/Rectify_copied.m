@@ -1,6 +1,6 @@
 %% This function is copied by a Toolbox from
 
-function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
+function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, tol, do_plot)
             %im1 = imread('img/L2.JPG');
             %im2 = imread('img/R2.JPG');
    
@@ -60,7 +60,7 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
                     0 c 1;...
                     r c 1];
             H2 = minimizeDistortion( H2, pts, 0 );
-            [rectIm1, rectIm2] = rectifyImages( im1, im2, H1, H2);
+            [rectIm1, rectIm2] = rectifyImages( im1, im2, H1, H2,tol);
             
             % transform inliers
             %{
@@ -140,7 +140,7 @@ function [s1,s2] = singularValues2x2(M)
     s2 = sqrt( (t1-t2)/2 );
 end
 
-function [im1, im2] = rectifyImages( I1, I2, H1, H2)
+function [im1, im2] = rectifyImages( I1, I2, H1, H2,tol)
     % find common transformed area
     [r1,c1,~] = size(I1);
     corners1 = transformCorners( H1, r1,c1 );
@@ -160,28 +160,18 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2)
     height = ymax-ymin;
     
     % check dimension
-    wCond = mean([c1 c2])*0.1;
-    hCond = mean([r1 r2])*0.1;
+    wCond = mean([c1 c2])*tol;
+    hCond = mean([r1 r2])*tol;
     
     if width<wCond || height<hCond% new images will be <10% of originals
-         %disp(strcat('Bad rectification',num2str(width),'<',num2str(wCond), ...
-         %                   ' or ',num2str(height),'<',num2str(hCond)));
-         %im1 = [];
-         %im2 = [];
-         error('recified images will be <10% of originals');
+         disp(strcat('Bad rectification',num2str(width),'<',num2str(wCond), ...
+                            ' or ',num2str(height),'<',num2str(hCond)));
+         im1 = [];
+         im2 = [];
+         return;
+         %error('recified images will be <10% of originals');
 
     end
-    
-%     xLim = [ xmin-0.5,xmax+0.5 ];
-%     yLim = [ ymin-0.5,ymax+0.5 ];
-%     
-%     tform1 = projective2d( H1' );%% Computer Vision Toolbox function imwarp
-%     tform2 = projective2d( H2' );%% Computer Vision Toolbox function imwarp
-%     
-%     outputView = imref2d([height-1, width-1], xLim, yLim);
-%      
-%     im1 = imwarp(I1, tform1, 'OutputView', outputView ); %% Computer Vision Toolbox function imwarp
-%     im2 = imwarp(I2, tform2, 'Outputview', outputView );
      
      %Image Warping
      im1 = imagewarp(I1, H1);     
