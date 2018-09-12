@@ -164,8 +164,11 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2)
     hCond = mean([r1 r2])*0.1;
     
     if width<wCond || height<hCond% new images will be <10% of originals
-        error('recified images will be <10% of originals');
-
+        disp(strcat('Bad rectification',num2str(width),'<',num2str(wCond), ...
+                            ' or ',num2str(height),'<',num2str(hCond)));
+         im1 = [];
+         im2 = [];
+         return   
     end
      
      %Image Warping
