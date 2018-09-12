@@ -38,7 +38,7 @@ tic
 p=0.3;
 
 %% Execute free_viewpoint function
-%try
+try
     % used Parameter
     harris_var =                {'segment_length',15 ...
                                 ,'k',0.05 ...
@@ -72,10 +72,10 @@ p=0.3;
                                 };
     save 'parameter/default_parameter.mat' all_var;                      
     output_image = free_viewpoint(Image_R, Image_L, all_var{:});
-%catch inputError
-%    disp(strcat('ERROR: ', inputError.message))
-%    return;
-%end
+catch inputError
+    disp(strcat('ERROR: ', inputError.message))
+    return;
+end
 
 %% Display Output
 % Display Virtual View
