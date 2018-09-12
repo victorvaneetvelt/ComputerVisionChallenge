@@ -1,4 +1,5 @@
 function show_correspondence(image_l,image_r,correspondence_stable)
+ figure; 
  imshow(image_l);
  hold on;
  h = imshow(image_r);      
