@@ -52,8 +52,9 @@ function F = extract_F(image_r, image_l, varargin)
     %                                        'do_plot',false);
     %Find stable correspondence pair with the RANSAC-Algorithm
     %correspondence_stable = F_ransac(correspondence, 'tolerance', 0.01);
-    correspondence_stable = F_ransac(correspondence, ramsac_var{:},'epsilon',0.7);
-    show_correspondence(image_l,image_r,correspondence_stable)
+    correspondence_stable = F_ransac(correspondence, ramsac_var{:},'epsilon',0.7,'p',0.6);
+    %show_correspondence(image_l,image_r,correspondence_stable)
+    
     % compute Fundamental matrix
     F = achtpunktalgorithmus(correspondence_stable);
 end
