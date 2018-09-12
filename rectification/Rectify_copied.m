@@ -4,7 +4,7 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
             %im1 = imread('img/L2.JPG');
             %im2 = imread('img/R2.JPG');
    
-            if exist('F','var')   
+            if ~exist('F','var')   
                 [F, in1, in2] = extractF_2( im1, im2 );
             end
             %% Compute Epipole
@@ -165,14 +165,14 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2 )
     % check dimension
     wCond = mean([c1 c2])*0.1;
     hCond = mean([r1 r2])*0.1;
-    
+%{    
     if width<wCond || height<hCond% new images will be <10% of originals
          disp('Bad rectification');
          im1 = [];
          im2 = [];
          return;
     end
-    
+%}    
 %     xLim = [ xmin-0.5,xmax+0.5 ];
 %     yLim = [ ymin-0.5,ymax+0.5 ];
 %     
