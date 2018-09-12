@@ -16,6 +16,11 @@ function F = extract_F(image_r, image_l, varargin)
     harris_var = varargin{2};
     correspondence_var = varargin{4};
     ramsac_var = varargin{6};
+    %text = matlab.ui.control.TextArea.empty;
+    %if size(varargin) == 8
+    %    text = varargin{8};
+    %    text.Value = {'exract_F'};
+    %end
     %harris_var = parser.Results.harris_var;
     %correspondence_var = parser.Results.correspondence_var;
     %ramsac_var = parser.Results.ramsac_var;

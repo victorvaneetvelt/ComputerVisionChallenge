@@ -39,7 +39,10 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
     msg = 'Compute rectified Images';
     if do_print; disp(msg);end
     if is_text_box; text_box.Value(1) = {msg}; end 
-    [rect_r, rect_l] = rectify_images(image_r, image_l, rectifiy_var{:});
+    [rect_r, rect_l] = rectify_images(image_r, image_l ...
+                                      ,rectifiy_var{:} ...
+                                      ,'gui_text_box',text_box ...
+                                      );
 
 
     
