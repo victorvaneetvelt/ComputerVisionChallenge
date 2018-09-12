@@ -10,8 +10,8 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz', 'Victor Van Eetvel
 mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.de', 'ge72nug@mytum.de', 'Uhl.Fabian@mytum.de'};
 
 %% Load images
-Image_L = imread('img/L1.JPG');
-Image_R = imread('img/R1.JPG');
+Image_L = imread('img/L2.JPG');
+Image_R = imread('img/R2.JPG');
 
 %% Kalibrierungsmatrix
 %load('result_mats/K2.mat');
@@ -48,7 +48,7 @@ p=0.3;
                                 ,'do_plot',false ...
                                 };
     correspondence_var =        {'window_length',25 ...
-                                ,'min_corr',0.91 ...
+                                ,'min_corr',0.95 ...
                                 ,'do_plot',false
                                 };
     
