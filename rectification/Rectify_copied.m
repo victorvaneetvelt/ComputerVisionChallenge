@@ -1,12 +1,9 @@
 %% This function is copied by a Toolbox from
 
-function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
+function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, tol, do_plot)
             %im1 = imread('img/L2.JPG');
             %im2 = imread('img/R2.JPG');
    
-            if ~exist('F','var')   
-                [F, in1, in2] = extractF_2( im1, im2 );
-            end
             %% Compute Epipole
             % calculate epipoles
             % of image 1 due to camera center in image 2 (right nullspace)
@@ -63,7 +60,7 @@ function [rectIm1, rectIm2] = Rectify_copied( im1, im2, F, do_plot)
                     0 c 1;...
                     r c 1];
             H2 = minimizeDistortion( H2, pts, 0 );
-            [rectIm1, rectIm2] = rectifyImages( im1, im2, H1, H2 );
+            [rectIm1, rectIm2] = rectifyImages( im1, im2, H1, H2, tol );
             
             % transform inliers
             %{
@@ -143,7 +140,7 @@ function [s1,s2] = singularValues2x2(M)
     s2 = sqrt( (t1-t2)/2 );
 end
 
-function [im1, im2] = rectifyImages( I1, I2, H1, H2 )
+function [im1, im2] = rectifyImages( I1, I2, H1, H2, tol)
     % find common transformed area
     [r1,c1,~] = size(I1);
     corners1 = transformCorners( H1, r1,c1 );
@@ -163,16 +160,17 @@ function [im1, im2] = rectifyImages( I1, I2, H1, H2 )
     height = ymax-ymin;
     
     % check dimension
-    wCond = mean([c1 c2])*0.1;
-    hCond = mean([r1 r2])*0.1;
-%{    
+    wCond = mean([c1 c2])*tol;
+    hCond = mean([r1 r2])*tol;
+    
     if width<wCond || height<hCond% new images will be <10% of originals
-         disp('Bad rectification');
+         disp(strcat('Bad rectification',num2str(width),'<',num2str(wCond), ...
+                            ' or ',num2str(height),'<',num2str(hCond)));
          im1 = [];
          im2 = [];
          return;
     end
-%}    
+    
 %     xLim = [ xmin-0.5,xmax+0.5 ];
 %     yLim = [ ymin-0.5,ymax+0.5 ];
 %     
@@ -274,40 +272,5 @@ end
 %}   
 
 
-function [F,pts1,pts2] = extractF_2( im1, im2 )
 
-
-im1 = rgb2gray( im1 );
-im2 = rgb2gray( im2 );
-
-% filter out noise
-im1 = imgaussfilt( im1, 1 );
-im2 = imgaussfilt( im2, 1 );
-
-% %% detect corresponding features
-pt1 = detectSURFFeatures( im1 );
-pt2 = detectSURFFeatures( im2 );
-
-% pt1 = detectHarrisFeatures( im1 );
-% pt2 = detectHarrisFeatures( im2 );
-
-[ft1, validPt1] = extractFeatures( im1, pt1 );
-[ft2, validPt2] = extractFeatures( im2, pt2 );
-
-sharedIndex = matchFeatures( ft1, ft2 );
-
-mtchPt1 = validPt1( sharedIndex(:,1), : );
-mtchPt2 = validPt2( sharedIndex(:,2), : );
-
-
-%% estimate fundamental matrix 
-[ F, inlierIndex ] = estimateFundamentalMatrix( mtchPt1, mtchPt2,...
-                'Method','RANSAC','NumTrials',10000,'DistanceThreshold',1e-2 );
-pts1 = mtchPt1( inlierIndex ).Location;
-pts2 = mtchPt2( inlierIndex ).Location;
-
-%showMatchedFeatures(im1, im2, mtchPt1(inlierIndex),mtchPt2(inlierIndex),'montage','PlotOptions',{'ro','go','y--'});
-
-
-end
 
