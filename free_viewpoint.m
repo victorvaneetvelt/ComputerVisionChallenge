@@ -2,6 +2,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
 % This function generates an image from a virtual viewpoint between two
 % real images. The output image has the same size as the input images.
 % 
+    
     tic;
     %% Validate Inputs
     parser =inputParser;
@@ -34,6 +35,7 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
 
 
     %% Compute the rectification images
+    addpath('rectification/');
     msg = 'Compute rectified Images';
     if do_print; disp(msg);end
     if is_text_box; text_box.Value(1) = {msg}; end 
@@ -62,63 +64,6 @@ function [output_image]  = free_viewpoint(image_r, image_l, varargin)
                                    rect_r,rect_l,image_r, image_l, p);
 end
 
-function [rect_r, rect_l] = rectify_images(image_r, image_l, varargin)
-    %% Validate Inputs
-    parser =inputParser;
-    % if default else take given
-    addOptional(parser,'harris_var', {}); 
-    % if default else take given
-    addOptional(parser,'correspondence_var', {}); 
-    % if default else take given
-    addOptional(parser,'ramsac_var', {}); 
-    % if not set set on empty else take given
-    addOptional(parser,'gui_text_box', ...
-        matlab.ui.control.TextArea.empty);                
-    parse(parser, varargin{:});
-    
-    harris_var = parser.Results.harris_var;
-    correspondence_var = parser.Results.correspondence_var;
-    ramsac_var = parser.Results.ramsac_var;
-
-    addpath('rectification/');    
-    
-    
-    %% In Grauwertbilder konvertieren
-    image_gray_r = mean(image_r,3);
-    image_gray_l = mean(image_l,3);
-
-    %% Gausfiltern
-    image_gray_r = imgaussfilt( image_gray_r, 1 );
-    image_gray_l = imgaussfilt( image_gray_l, 1 );
- 
-    % compute Harris-features
-    features_r = harris_detektor(image_gray_r,harris_var{:});
-    features_l = harris_detektor(image_gray_l,harris_var{:});
-    %features_r = harris_detektor(image_gray_r,'segment_length',15,...
-    %                            'k',0.04,'min_dist',50,'N',5,...
-    %                            'tau',10^6,'do_plot',false);
-    %features_l = harris_detektor(image_gray_l,'segment_length',15,...
-    %                            'k',0.04,'min_dist',50,'N',5,...
-    %                            'tau',10^5,'do_plot',false);
-   
-    %Korrespondenzschaetzung
-    correspondence = punkt_korrespondenzen(image_gray_r,image_gray_l,...
-                                            features_r,features_l, ...
-                                            correspondence_var{:});
-    %correspondence = punkt_korrespondenzen(image_gray_r,image_gray_l,...
-    %                                        features_r,features_l, ...
-    %                                        'window_length',25, ...
-    %                                        'min_corr',0.91,...
-    %                                        'do_plot',false);
-    %Find stable correspondence pair with the RANSAC-Algorithm
-    correspondence_stable = F_ransac(correspondence, ramsac_var{:});
-
-    % compute Fundamental matrix
-    F = achtpunktalgorithmus(correspondence_stable);
-  
-    % Try to compute rectifycation images
-    [rect_r, rect_l] = Rectify_copied( image_r, image_l, F, false);
-end
 
 function[disp_map_r, disp_map_l] = DisparityMap(image_r, image_l, varargin)
    %% Compute the Disparity Map 

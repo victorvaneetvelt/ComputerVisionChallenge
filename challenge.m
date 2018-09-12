@@ -10,8 +10,8 @@ members = {'Christian Geiger','Moritz Eckhoff','Tobias Betz', 'Victor Van Eetvel
 mail = {'christian.geiger@tum.de', 'moritz.eckhoff@tum.de', 'tobias94.betz@tum.de', 'ge72nug@mytum.de', 'Uhl.Fabian@mytum.de'};
 
 %% Load images
-Image_L = imread('img/L2.JPG');
-Image_R = imread('img/R2.JPG');
+Image_L = imread('img/L1.JPG');
+Image_R = imread('img/R1.JPG');
 
 %% Kalibrierungsmatrix
 %load('result_mats/K2.mat');
@@ -52,9 +52,9 @@ p=0.3;
                                 ,'do_plot',false
                                 };
     
-    ramsac_var =                {'tolerance', 0.0005};
+    ramsac_var =                {'tolerance', 0.01};
     
-    rectifiy_var =              {'harris_var', harris_var ...
+    rectify_var =              {'harris_var', harris_var ...
                                 ,'correspondence_var', correspondence_var...
                                 ,'ramsac_var', ramsac_var...
                                 };
@@ -68,9 +68,9 @@ p=0.3;
     all_var =                  {'do_print', true ...
                                 ,'displacement', p ...
                                 ,'disparity_var', disparity_var ...
-                                ,'rectifiy_var', rectifiy_var...
+                                ,'rectifiy_var', rectify...
                                 };
-    save 'parameter/default.m' all_var;                      
+    save 'parameter/default_parameter.mat' all_var;                      
     output_image = free_viewpoint(Image_R, Image_L, all_var{:});
 %catch inputError
 %    disp(strcat('ERROR: ', inputError.message))
